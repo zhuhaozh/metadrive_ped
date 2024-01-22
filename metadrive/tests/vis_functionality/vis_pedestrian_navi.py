@@ -85,7 +85,7 @@ if __name__ == "__main__":
     
     # cyc_1 = env.engine.spawn_object(Cyclist, position=[30, 6], heading_theta=0, random_seed=1)
     # cyc_1.set_velocity(direction=[1,0])
-    
+
     env.vehicle.set_velocity([1, 0], in_local_frame=False)
 
 
@@ -122,16 +122,17 @@ if __name__ == "__main__":
         # print("------------------getZ-------------------")
         # print("obj_1: {:.4f}".format(obj_1.origin.getZ()))
         # print("obj_4: {:.4f}".format(obj_4.origin.getZ()))
-        check_restults = obj_4._state_check(debug=True)
-        for c in check_restults:
-            if c[0] == "ROAD_EDGE_SIDEWALK":
-                # print("obj_4: ", obj_4._state_check(debug=True))
-                print("obj_4: ", check_restults)
-                break
+        # check_restults = obj_4._state_check(debug=True)
+        # for c in check_restults:
+        #     if c[0] == "ROAD_EDGE_SIDEWALK":
+        #         # print("obj_4: ", obj_4._state_check(debug=True))
+        #         print("obj_4: ", check_restults)
+        #         break
         # print("-----------------------------------------")
 
         obj_1.do_obstacle_aviodance()
         obj_1.set_on_ground()
+        obj_2.set_on_ground()
         obj_4.set_on_ground()
         # obj_2.set_on_ground()
         # obj_1.get_nearest_obstacle()

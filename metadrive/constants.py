@@ -545,9 +545,10 @@ class CameraTagStateKey:
 
 
 
-import random
+import random, os
 class PedestrianAssetPaths:
-    PEDESTRIAN_ROOT = "/home/PJLAB/zhuhao/workspace/human_in_simulators/metadrive_code/synbody_mats/sensedressing-sample-assets/gltf/"
+    PEDESTRIAN_ROOT = os.path.abspath("./metadrive/assets_pedestrian/") + "/"
+    # PEDESTRIAN_ROOT = "/home/PJLAB/zhuhao/workspace/human_in_simulators/metadrive_code/synbody_mats/sensedressing-sample-assets/gltf/"
     PEDESTRIAN_TEXTURE = {
         "0": {'path': PEDESTRIAN_ROOT + "characters_yup/0000403_people_baked.gltf", 'height': 1.29714}, 
         "1": {'path': PEDESTRIAN_ROOT + "characters_yup/0009203_people_baked.gltf", 'height': 1.23252}

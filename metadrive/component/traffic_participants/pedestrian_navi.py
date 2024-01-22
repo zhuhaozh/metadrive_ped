@@ -290,7 +290,7 @@ class PedestrianNavigation(PedestrianBase):
             else:
                 contacts.add(name)
         if heightest_z != -1000:
-            self.origin.setZ(self.origin.getZ() - distance)
+            self.origin.setZ(heightest_z)
         return contacts
 
     @staticmethod
