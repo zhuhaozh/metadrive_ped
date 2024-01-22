@@ -233,6 +233,13 @@ class Vector(tuple):
     def dot(self, other):
         return self[0] * other[0] + self[1] * other[1]
 
+    def length(self):
+        return np.sqrt(self[0] * self[0] + self[1] * self[1])
+
+    def normalize(self):
+        length = self.length()
+        return Vector((self[0] / length, self[1] / length))
+
 
 def compute_angular_velocity(initial_heading, final_heading, dt):
     """

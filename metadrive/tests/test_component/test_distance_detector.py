@@ -128,4 +128,4 @@ def test_lidar_with_mask(render=False):
 
 if __name__ == "__main__":
     # test_lidar_with_mask(render=True)
-    test_original_lidar(render=False)
+    test_original_lidar(render=True)

@@ -53,10 +53,10 @@ class BaseTrafficParticipant(BaseObject):
     # def pitch(self):
     #     return np.deg2rad(self.origin.getR())
 
-    def add_body(self, physics_body):
+    def add_body(self, physics_body, friction=0., anisotropic_friction=(0., 0., 0.)):
         super(BaseTrafficParticipant, self).add_body(physics_body)
-        self._body.set_friction(0.)
-        self._body.set_anisotropic_friction(LVector3(0., 0., 0.))
+        self._body.set_friction(friction)
+        self._body.set_anisotropic_friction(LVector3(*anisotropic_friction))
 
     def standup(self):
         self.set_pitch(0)

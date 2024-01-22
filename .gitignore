@@ -51,3 +51,5 @@
 **/**.mp4
 /documentation/jupyter_execute/
 /documentation/**/**.gif
+
+**/tests/test_panda3d/
