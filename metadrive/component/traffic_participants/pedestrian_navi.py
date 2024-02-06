@@ -78,12 +78,19 @@ class PedestrianBase(BaseTrafficParticipant):
             {'run': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['run']})
         self.actor.loadAnims(
             {'idle': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['idle']})
+        
+        """
+        Other infos 
+        """
 
+        self.on_lane = True
+        
         self.actor.setHpr(self.actor.getH() + 180,
                           self.actor.getP() + 0, self.actor.getR() + 0)
         self.actor.setPos(0, 0, -self.HEIGHT / 2)
         # self.origin.setPos(0, 0, 1)
 
+        self.joints = self.setup_joints() # must set before playing animation
         self.actor.loop(self.cur_state, fromFrame=10, toFrame=50)
 
         self.setup_collisions()
@@ -198,6 +205,9 @@ class PedestrianBase(BaseTrafficParticipant):
         next_pos = self.origin.get_pos() + LPoint3f(*orientation, 0) * distance
         self.origin.set_pos(next_pos) # actor
 
+    def setup_joints(self):
+        joints = {"left_shoulder": self.actor.controlJoint(None, 'modelRoot', 'right_shoulder')}
+        return joints
     
     @property
     def LENGTH(self):

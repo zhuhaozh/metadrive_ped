@@ -7,6 +7,7 @@ import numpy as np
 from direct.controls.InputState import InputState
 from panda3d.core import Vec3, Point3, PNMImage, NodePath
 from panda3d.core import WindowProperties
+from panda3d.bullet import BulletVehicle, BulletCharacterControllerNode
 
 from metadrive.constants import CollisionGroup, CameraTagStateKey, Semantics
 from metadrive.engine.engine_utils import get_engine
@@ -225,7 +226,12 @@ class MainCamera(BaseSensor):
         chassis_pos = vehicle.chassis.get_pos()
         self.camera_queue.put(chassis_pos)
         if not self.FOLLOW_LANE:
-            forward_dir = vehicle.system.get_forward_vector()
+            if isinstance(vehicle.system, BulletVehicle):
+                forward_dir = vehicle.system.get_forward_vector()
+            elif isinstance(vehicle.system, BulletCharacterControllerNode):
+                forward_dir = vehicle.get_forward_vector()
+            else:
+                raise NotImplementedError("system", vehicle, vehicle.system)
             # camera is facing to y
             current_forward_dir = [forward_dir[0], forward_dir[1]]
         else:

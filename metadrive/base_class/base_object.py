@@ -9,7 +9,7 @@ from typing import Dict
 
 import numpy as np
 import seaborn as sns
-from panda3d.bullet import BulletWorld, BulletBodyNode, BulletVehicle
+from panda3d.bullet import BulletWorld, BulletBodyNode, BulletVehicle,BulletCharacterControllerNode
 from panda3d.core import LVector3, NodePath, PandaNode
 from metadrive.constants import Semantics, CameraTagStateKey
 from metadrive.base_class.base_runnable import BaseRunnable
@@ -178,7 +178,8 @@ class BaseObject(BaseRunnable, MetaDriveType, ABC):
     def add_body(self, physics_body, add_to_static_world=False):
         if self._body is None:
             # add it to physics world, in which this object will interact with other object (like collision)
-            if not isinstance(physics_body, BulletBodyNode):
+            if not (isinstance(physics_body, BulletBodyNode) \
+                    or isinstance(physics_body, BulletCharacterControllerNode)):
                 raise ValueError("The physics body is not BulletBodyNode type")
             self._body = physics_body
             new_origin = NodePath(self._body)
@@ -199,7 +200,7 @@ class BaseObject(BaseRunnable, MetaDriveType, ABC):
                 self.static_nodes.append(physics_body)
             else:
                 self.dynamic_nodes.append(physics_body)
-            if self.MASS is not None:
+            if self.MASS is not None and isinstance(physics_body, BulletBodyNode):
                 assert isinstance(self.MASS,
                                   int) or isinstance(self.MASS, float), "MASS should be a float or an integer"
                 self._body.setMass(self.MASS)
@@ -422,7 +423,11 @@ class BaseObject(BaseRunnable, MetaDriveType, ABC):
         self.origin.setR(pitch)
 
     def set_static(self, flag):
-        self.body.setStatic(flag)
+        try:
+            self.body.setStatic(flag)
+        except Exception: # TODO
+            print("### set static error for pedestrian agent. fix it later")
+
 
     def get_panda_pos(self):
         raise DeprecationWarning("It is not allowed to access Panda Pos!")

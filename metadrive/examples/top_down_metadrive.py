@@ -59,12 +59,12 @@ if __name__ == "__main__":
         dict(
             # We also support using two renderer (Panda3D renderer and Pygame renderer) simultaneously. You can
             # try this by uncommenting next line.
-            # use_render=True,
+            use_render=True,
 
             # You can also try to uncomment next line with "use_render=True", so that you can control the ego vehicle
             # with keyboard in the main window.
             # manual_control=True,
-            map="SSSS",
+            # map="SSSS",
             traffic_density=0.1,
             num_scenarios=100,
             start_seed=random.randint(0, 1000),

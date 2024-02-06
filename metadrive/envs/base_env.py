@@ -19,13 +19,14 @@ from metadrive.constants import TerminationState, TerrainProperty
 from metadrive.engine.engine_utils import initialize_engine, close_engine, \
     engine_initialized, set_global_random_seed, initialize_global_config, get_global_config
 from metadrive.engine.logger import get_logger, set_log_level
-from metadrive.manager.agent_manager import VehicleAgentManager
+from metadrive.manager.agent_manager import PedestrianAgentManager, VehicleAgentManager
 from metadrive.manager.record_manager import RecordManager
 from metadrive.manager.replay_manager import ReplayManager
 from metadrive.obs.observation_base import DummyObservation
 from metadrive.obs.observation_base import BaseObservation
 from metadrive.policy.env_input_policy import EnvInputPolicy
 from metadrive.scenario.utils import convert_recorded_scenario_exported
+from metadrive.type import MetaDriveType
 from metadrive.utils import Config, merge_dicts, get_np_random, concat_step_infos
 from metadrive.version import VERSION
 
@@ -393,8 +394,12 @@ class BaseEnv(gym.Env):
         return {DEFAULT_AGENT: self.get_single_observation()}
 
     def _get_agent_manager(self):
-        return VehicleAgentManager(init_observations=self._get_observations())
-
+        # if self.config['agent_configs'][DEFAULT_AGENT]['vehicle_model'] == MetaDriveType.PEDESTRIAN:
+        #     return PedestrianAgentManager(init_observations=self._get_observations())
+        # else:
+            # return VehicleAgentManager(init_observations=self._get_observations())
+        return PedestrianAgentManager(init_observations=self._get_observations())
+    
     def lazy_init(self):
         """
         Only init once in runtime, variable here exists till the close_env is called

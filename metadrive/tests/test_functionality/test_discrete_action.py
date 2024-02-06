@@ -37,6 +37,8 @@ def test_discrete_action():
     env = MetaDriveEnv(
         dict(
             discrete_action=True,
+            use_render=True,
+
             use_multi_discrete=False,
             discrete_steering_dim=3,
             discrete_throttle_dim=5,
@@ -55,7 +57,7 @@ def test_discrete_action():
         assert policy.convert_to_continuous_action(7) == (0, 0)
         assert policy.convert_to_continuous_action(14) == (1, 1)
 
-        for _ in range(20):
+        for _ in range(222220):
             o, r, tm, tc, i = env.step(env.action_space.sample())
 
     finally:
