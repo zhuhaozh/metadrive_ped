@@ -42,6 +42,7 @@ class PedestrianBase(BaseTrafficParticipant):
     STATES = ['walk', "run", "idle"]
 
     def __init__(self, position, heading_theta, random_seed=None, name=None, set_friction=None):
+        # 数据路径
         rand_texture = AssetPaths.Pedestrian.get_random_texture()
         rand_texture = AssetPaths.Pedestrian.PEDESTRIAN_TEXTURE["0"]
         self.HEIGHT = rand_texture['height']
@@ -49,7 +50,9 @@ class PedestrianBase(BaseTrafficParticipant):
 
         super(PedestrianBase, self).__init__(
             position, heading_theta, random_seed, name=name)
-        n = BaseRigidBodyNode(self.name, self.TYPE_NAME)
+        # panda3d 
+        # 
+        n = BaseRigidBodyNode(self.name, self.TYPE_NAME) 
         if set_friction:
             self.add_body(n, friction=100, anisotropic_friction=(5., 5., 5.))
         else:
@@ -69,7 +72,8 @@ class PedestrianBase(BaseTrafficParticipant):
         self.yVector = Vec2(-1, 0)
         self.cur_state = random.choice(self.STATES)
         self.cur_speed = 0
-
+        
+        # 加载数据
         self.actor = Actor(rand_texture['path'])
 
         self.actor.loadAnims(

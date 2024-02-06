@@ -77,10 +77,12 @@ if __name__ == "__main__":
 
     env.switch_to_third_person_view()
     
+    # 初始化
     obj_1 = env.engine.spawn_object(PedestrianNavigation, position=[10, 5], heading_theta=0, random_seed=1)
     obj_2 = env.engine.spawn_object(PedestrianNavigation, position=[25, 5], heading_theta=0, random_seed=1)
     # obj_3 = env.engine.spawn_object(PedestrianNavigation, position=[20, 6], heading_theta=0, random_seed=1)
-    obj_4 = env.engine.spawn_object(PedestrianNavigation, position=[15, -3], heading_theta=0, random_seed=1, set_friction=True) # control by 
+    obj_4 = env.engine.spawn_object(PedestrianNavigation, position=[15, -3], heading_theta=0, random_seed=1, 
+                                    set_friction=True) # control by 
     obj_4.set_heading_theta(90, in_rad=False)
     
     # cyc_1 = env.engine.spawn_object(Cyclist, position=[30, 6], heading_theta=0, random_seed=1)
@@ -131,6 +133,7 @@ if __name__ == "__main__":
         # print("-----------------------------------------")
 
         obj_1.do_obstacle_aviodance()
+        
         obj_1.set_on_ground()
         obj_2.set_on_ground()
         obj_4.set_on_ground()
