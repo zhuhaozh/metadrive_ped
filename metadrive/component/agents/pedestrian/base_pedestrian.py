@@ -135,6 +135,7 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         self.navigation: Optional[NodeNetworkNavigation] = None
 
         # state info
+        self.speed = 1 # env required, not used
         self.throttle_brake = 0.0
         self.steering = 0
         self.last_current_action = deque([(0.0, 0.0), (0.0, 0.0)], maxlen=2)
@@ -361,25 +362,25 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         if action is None:
             return
         
-        steering = action[0] #  / np.pi * 180
-        throttle_brake = action[1]
+        steering = action[0] * 90 # / np.pi * 180
+        speed = action[1] * 10
 
-        # print("action",action)
+        # print("action",self.speed, action)
         # print(self.steering)
-        if self.steering * steering < 0:
-            self.steering = 0
-        self.steering = self.steering + steering * 1
-        self.steering = min(self.steering, 45)
-        self.steering = max(self.steering, -45)
-        
+        # if self.steering * steering < 0:
+        #     self.steering = 0
+        # self.steering = self.steering + steering * 1
+        # self.steering = min(steering, 45)
+        # self.steering = max(steering, -45)
+        # self.speed = throttle_brake * 30
 
-        if throttle_brake > 0:
-            self.speed = self.speed + throttle_brake * 0.5
-        else:
-            self.speed = max(0, self.speed + throttle_brake * 5)
+        # if throttle_brake > 0:
+        #     self.speed = self.speed + throttle_brake * 0.5
+        # else:
+        #     self.speed = max(0, self.speed + throttle_brake * 5)
         
-        self._body.setAngularMovement(self.steering)
-        self._body.setLinearMovement(LPoint3f(0, 1, 0) * self.speed, True)
+        self._body.setAngularMovement(steering)
+        self._body.setLinearMovement(LPoint3f(0, 1, 0) * speed, True)
     
     def _set_incremental_action(self, action: np.ndarray):
         raise NotImplementedError("_set_incremental_action")
