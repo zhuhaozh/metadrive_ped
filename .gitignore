@@ -1,4 +1,6 @@
 *.pyc
+*.jpg
+*.gif
 *.egg-info
 /.idea/
 *.glf

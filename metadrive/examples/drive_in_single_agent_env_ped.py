@@ -17,22 +17,30 @@ from metadrive.component.sensors.rgb_camera import RGBCamera
 from metadrive.constants import HELP_MESSAGE
 
 if __name__ == "__main__":
-    config = dict(
+    config = dict(map="X",
         # controller="steering_wheel",
         use_render=True,
         manual_control=True,
         traffic_density=0.1,
         num_scenarios=10000,
         random_agent_model=False,
-        random_lane_width=True,
-        random_lane_num=True,
+        random_lane_width=False,
+        random_lane_num=False,
         on_continuous_line_done=False,
-        out_of_route_done=True,
-        vehicle_config=dict(show_lidar=True, show_navi_mark=False),
+        out_of_route_done=False,
+        vehicle_config=dict(show_lidar=True, 
+                            show_navi_mark=True, 
+                            # spawn_longitude=0,
+                            # spawn_lateral=0.,
+                            ),
+                            # destination="ddddd"),
         # debug=True,
-        # debug_static_world=True,
-        map=4,  # seven block
+        # debug_static_world=True
+        # map=4,  # seven block
+
         start_seed=10,
+        show_crosswalk=True,
+        show_sidewalk=True,
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("--observation", type=str, default="lidar", choices=["lidar", "rgb_camera"])

@@ -17,7 +17,7 @@ import os
 
 
 def create_env(need_monitor=False):
-    env = MetaDriveEnv(dict(map="C",
+    env = MetaDriveEnv(dict(# map="C",
                       # This policy setting simplifies the task                      
                       discrete_action=False,
                       discrete_throttle_dim=3,
@@ -25,10 +25,10 @@ def create_env(need_monitor=False):
                       horizon=500,
                       # scenario setting
                       random_spawn_lane_index=False,
-                      num_scenarios=1,
+                      num_scenarios=5,
                       start_seed=5,
-                      traffic_density=0,
-                      accident_prob=0,
+                      traffic_density=0.3,
+                      accident_prob=0.1,
                       log_level=50))
     if need_monitor:
         env = Monitor(env)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 verbose=1)
     
     # # train = False
-    model.learn(total_timesteps=300_000,
+    model.learn(total_timesteps=300000,
                 log_interval=1)
 
     # # else:
@@ -81,8 +81,9 @@ if __name__ == '__main__':
             if done:
                 print("episode_reward", total_reward)
                 break
-                
+
         env.top_down_renderer.generate_gif()
+        model.save("ppo_ped")
     finally:
         env.close()
 
