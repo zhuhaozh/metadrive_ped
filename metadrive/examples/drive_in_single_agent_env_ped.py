@@ -35,12 +35,12 @@ if __name__ == "__main__":
                             ),
                             # destination="ddddd"),
         # debug=True,
-        # debug_static_world=True
+        debug_static_world=True,
         # map=4,  # seven block
-
+        debug_physics_world=False,
         start_seed=10,
         show_crosswalk=True,
-        show_sidewalk=True,
+        show_sidewalk=False,
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("--observation", type=str, default="lidar", choices=["lidar", "rgb_camera"])

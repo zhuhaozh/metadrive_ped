@@ -64,7 +64,7 @@ class NodeNetworkNavigation(BaseNavigation):
         assert current_lane is not None, "spawn place is not on road!"
         super(NodeNetworkNavigation, self).reset(current_lane)
         assert self.map.road_network_type == NodeRoadNetwork, "This Navigation module only support NodeRoadNetwork type"
-        destination = self.auto_assign_task(self.map, current_lane.index, destination, random_seed)
+        destination = self.auto_assign_task(self.map, current_lane.index, destination, random_seed) # assign destination, task
         self.set_route(current_lane.index, destination)
 
     @staticmethod
@@ -125,6 +125,8 @@ class NodeNetworkNavigation(BaseNavigation):
             ref_lane = final_lanes[0]
             later_middle = (float(self.get_current_lane_num()) / 2 - 0.5) * self.get_current_lane_width()
             check_point = ref_lane.position(ref_lane.length, later_middle)
+            # self.checkpoint_positions.append((check_point[0], check_point[1]))
+            # print("local", check_point[0], check_point[1], self.checkpoint_positions)
             self._dest_node_path.setPos(panda_vector(check_point[0], check_point[1], self.MARK_HEIGHT))
 
     def update_localization(self, ego_vehicle):
@@ -167,7 +169,8 @@ class NodeNetworkNavigation(BaseNavigation):
             ego_vehicle=ego_vehicle
         )
 
-        if self._show_navi_info:
+        if True:
+        # if self._show_navi_info:
             # Whether to visualize little boxes in the scene denoting the checkpoints
             pos_of_goal = checkpoint
             self._goal_node_path.setPos(panda_vector(pos_of_goal[0], pos_of_goal[1], self.MARK_HEIGHT))

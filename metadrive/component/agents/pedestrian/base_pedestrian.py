@@ -528,18 +528,22 @@ class BasePedestrian(BaseObject, BasePedestrianState):
             self.actor = Actor(rand_texture['path'])
             self.cur_state = random.choice(self.STATES)
 
-            self.actor.setHpr(self.actor.getH() - 90, # + 180,
-                            self.actor.getP() + 0, self.actor.getR() + 0)
-            self.actor.setPos(0, 0, -self.HEIGHT / 2)
-
             self.actor.loadAnims(
                 {'walk': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['walk']})
             self.actor.loadAnims(
                 {'run': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['run']})
             self.actor.loadAnims(
                 {'idle': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['idle']})
-            
             self.actor.loop(self.cur_state, fromFrame=10, toFrame=50)
+            
+            self.actor.setHpr(self.actor.getH() - 90, # recitfy wrong directions in animations
+                              self.actor.getP() + 0, self.actor.getR() + 0)
+
+            # self.actor.setHpr(self.actor.getH() + 180,
+            #                 self.actor.getP() + 0, self.actor.getR() + 0)
+
+            self.actor.setPos(0, 0, -self.HEIGHT / 2)
+
             
             self._instance = self.actor.instanceTo(self.origin)
             self.show_coordinates()

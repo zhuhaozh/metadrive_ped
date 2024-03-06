@@ -1,7 +1,8 @@
 from metadrive.engine.core.manual_controller import KeyboardController, SteeringWheelController, XboxController
 from metadrive.engine.engine_utils import get_global_config
 # from metadrive.examples import expert
-from metadrive.examples.ppo_expert.custom_expert import  torch_expert as expert
+# from metadrive.examples.ppo_expert.custom_expert import  torch_expert as expert
+from metadrive.examples.ppo_expert.custom_expert import  rule_expert as expert
 from metadrive.policy.env_input_policy import EnvInputPolicy
 
 
