@@ -245,7 +245,7 @@ class PGBlock(BaseBlock):
     def block_network_type(self):
         return NodeRoadNetwork
 
-    def create_in_world(self):
+    def create_in_world(self): # panda3d
         graph = self.block_network.graph
         for _from, to_dict in graph.items():
             for _to, lanes in to_dict.items():
@@ -325,11 +325,76 @@ class PGBlock(BaseBlock):
                 longitude = min(lane.length + 0.1, longitude)
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
-        self.sidewalks[str(lane.index)] = {
+        self.sidewalks["SDW_"+str(lane.index)] = {
             "type": MetaDriveType.BOUNDARY_SIDEWALK,
             "polygon": polygon,
             "height": sidewalk_height
         }
+
+
+    def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
+        """
+        Construct the sidewalk for this lane
+        Args:
+            block:
+
+        Returns:
+
+        """
+        build_at_start = True
+        build_at_end = True
+        if ">" in str(lane.index):
+            return
+
+        lane_names = list(filter(lambda x: not x.startswith("-"), list(set(self.block_network.graph.keys()) - set(self.block_network.graph['>>>'].keys()))))
+        lane_name = "#".join([str(x) for x in lane.index])
+        for name in lane_names:
+            if name in lane_name:
+                if lane_name.startswith("-"):
+                    build_at_start = False
+                else:
+                    build_at_end = False
+
+        if str(lane.index) in self.sidewalks: # self.crosswalks:
+            logger.warning("Crosswalk id {} already exists!".format(str(lane.index)))
+            return
+        start_lat = +lane.width_at(0) - PGDrivableAreaProperty.SIDEWALK_WIDTH * 3 #  / 2 + 0.2
+        side_lat = start_lat + PGDrivableAreaProperty.SIDEWALK_WIDTH * 5
+
+        if build_at_end:
+            longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index)
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+        
+        if build_at_start:
+            longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index) + "_S"
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+
+
+    def build_crosswalk_block(self, key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat):
+        polygon = []
+
+        assert lateral_direction == -1 or lateral_direction == 1
+
+        start_lat *= lateral_direction
+        side_lat *= lateral_direction
+
+        for k, lateral in enumerate([start_lat, side_lat]):
+            if k == 1:
+                longs = longs[::-1]
+            for longitude in longs:
+                # print(k, lateral, longitude)
+                point = lane.position(longitude, lateral)
+                polygon.append([point[0], point[1]])
+        
+        self.sidewalks[key] = {
+        # self.sidewalks[str(lane.index)] = {
+            "type": MetaDriveType.BOUNDARY_SIDEWALK,
+            "polygon": polygon,
+            "height": sidewalk_height
+        }
+
 
     def _construct_lane_line_in_block(self, lane, construct_left_right=(True, True)):
         """
@@ -341,8 +406,10 @@ class PGBlock(BaseBlock):
             lateral = idx * lane.width_at(0) / 2
             if line_type == PGLineType.CONTINUOUS:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
+                # self._generate_sidewalk_from_line(lane)
             elif line_type == PGLineType.BROKEN:
                 self._construct_broken_line(lane, lateral, line_color, line_type)
+                self._generate_crosswalk_from_line(lane)
             elif line_type == PGLineType.SIDE:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
                 self._generate_sidewalk_from_line(lane)

@@ -75,3 +75,13 @@ def rule_expert(vehicle, deterministic=False, need_obs=False):
     else:
         vehicle._body.setLinearMovement(LPoint3f(0 , 1, 0) * 1, True)
     return None
+
+def get_dest_heading(obj, dest_pos):
+    position = obj.position
+
+    dest = panda_vector(dest_pos[0], dest_pos[1])
+    vec_to_2d = dest - position 
+    dist_to = vec_to_2d.length()
+
+    heading = Vec2(*obj.heading).signedAngleDeg(vec_to_2d) * 3
+    return heading

@@ -75,6 +75,8 @@ class PGMap(BaseMap):
         )
         big_map.generate(self._config[self.GENERATE_TYPE], self._config[self.GENERATE_CONFIG])
         self.blocks = big_map.blocks
+        self.sidewalks = self.blocks[-1].sidewalks
+        self.crosswalks = self.blocks[-1].crosswalks
         big_map.destroy()
 
     def _config_generate(self, blocks_config: List, parent_node_path: NodePath, physics_world: PhysicsWorld):

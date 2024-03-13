@@ -298,7 +298,6 @@ class BasePedestrian(BaseObject, BasePedestrianState):
             heading = self.config["spawn_position_heading"][1]
 
         self.spawn_place = position
-        # print("position:", position)
         self.set_heading_theta(heading)
         """
         # self.set_static(False)
@@ -310,9 +309,11 @@ class BasePedestrian(BaseObject, BasePedestrianState):
             self.set_position(position[:2], height=position[-1])
         else:
             raise ValueError()
-
-        self.reset_navigation()
-
+        try:
+            self.reset_navigation()
+        except Exception:
+            pass
+            # print("error self.reset_navigation()")
         # self.body.clearForces()
         self.body.setLinearMovement(Vec3(0, 0, 0), True)
         self.body.setAngularMovement(0)
@@ -332,8 +333,11 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         self.last_heading_dir = self.heading
         self.last_velocity = self.velocity  # 2D vector
         self.last_speed = self.speed  # Scalar
-
-        self.update_dist_to_left_right()
+        try:
+            self.update_dist_to_left_right()
+        except Exception:
+            pass
+            # print("error self.update_dist_to_left_right()")
         self.takeover = False
         self.energy_consumption = 0
 

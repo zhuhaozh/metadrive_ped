@@ -281,10 +281,12 @@ class MetaDriveEnv(BaseEnv):
     def setup_engine(self):
         super(MetaDriveEnv, self).setup_engine()
         from metadrive.manager.traffic_manager import PGTrafficManager
+        from metadrive.manager.traffic_manager import HumanoidManager
         from metadrive.manager.pg_map_manager import PGMapManager
         from metadrive.manager.object_manager import TrafficObjectManager
         self.engine.register_manager("map_manager", PGMapManager())
-        self.engine.register_manager("traffic_manager", PGTrafficManager())
+        self.engine.register_manager("traffic_manager", HumanoidManager())
+        # self.engine.register_manager("traffic_manager", PGTrafficManager())
         if abs(self.config["accident_prob"] - 0) > 1e-2:
             self.engine.register_manager("object_manager", TrafficObjectManager())
 

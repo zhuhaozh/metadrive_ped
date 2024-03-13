@@ -40,7 +40,7 @@ if __name__ == "__main__":
         debug_physics_world=False,
         start_seed=10,
         show_crosswalk=True,
-        show_sidewalk=False,
+        show_sidewalk=True,
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("--observation", type=str, default="lidar", choices=["lidar", "rgb_camera"])
@@ -82,5 +82,7 @@ if __name__ == "__main__":
             if (tm or tc) and info["arrive_dest"]:
                 env.reset(env.current_seed + 1)
                 env.current_track_agent.expert_takeover = True
+            
+            frame = env.render(mode="topdown", window=True, screen_record=(60,0), screen_size=(400,400), semantic_map=True)
     finally:
         env.close()

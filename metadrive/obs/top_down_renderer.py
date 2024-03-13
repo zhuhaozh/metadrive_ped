@@ -15,6 +15,8 @@ from metadrive.scenario.scenario_description import ScenarioDescription
 from metadrive.utils.utils import import_pygame
 from metadrive.utils.utils import is_map_related_instance
 
+import cv2
+import numpy as np
 pygame, gfxdraw = import_pygame()
 
 color_white = (255, 255, 255)
@@ -41,7 +43,6 @@ def draw_top_down_map_native(
     Returns: cv2.image or pygame.Surface
 
     """
-    import cv2
     surface = WorldSurface(film_size, 0, pygame.Surface(film_size))
     b_box = map.road_network.get_bounding_box()
     x_len = b_box[1] - b_box[0]
@@ -63,6 +64,9 @@ def draw_top_down_map_native(
                     surface, TopDownSemanticColor.get_color(obj["type"]),
                     [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
                 )
+                # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+                # pts = pts.reshape((-1,1,2))
+                # cv2.polylines(img, [pts], True, [124,124,124])
 
             elif MetaDriveType.is_road_line(obj["type"]) or MetaDriveType.is_road_boundary_line(obj["type"]):
                 if semantic_broken_line and MetaDriveType.is_broken_line(obj["type"]):
@@ -73,6 +77,9 @@ def draw_top_down_map_native(
                     if index + 1 < len(obj["polyline"]):
                         s_p = obj["polyline"][index]
                         e_p = obj["polyline"][index + 1]
+                        # s_p1 = obj["polyline"][index] + 50
+                        # e_p1 = obj["polyline"][index + 1] + 50
+                        # cv2.line(img,[int(s_p1[0]), int(s_p1[1])], [int(e_p1[0]), int(e_p1[1])],[210, 210, 210], 5)
                         pygame.draw.line(
                             surface,
                             TopDownSemanticColor.get_color(obj["type"]),
@@ -81,6 +88,29 @@ def draw_top_down_map_native(
                             # max(surface.pix(LaneGraphics.STRIPE_WIDTH),
                             surface.pix(PGDrivableAreaProperty.LANE_LINE_WIDTH) * 2
                         )
+        crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
+        sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
+
+        for key in crosswalk_keys:
+            obj = all_lanes[key]
+            pygame.draw.polygon(
+                surface, np.array([125, 0, 0]),
+                [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
+            )
+            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            # pts = pts.reshape((-1,1,2))
+            # cv2.fillPoly(img, [pts], [255, 255, 255])
+
+        for key in sidewalk_keys:
+            obj = all_lanes[key]
+            pygame.draw.polygon(
+                surface, np.array([0, 125, 0]),
+                [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
+            )
+            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            # pts = pts.reshape((-1,1,2))
+            # cv2.fillPoly(img, [pts], [255, 255, 255])
+            
     else:
         if isinstance(map, ScenarioMap):
             line_sample_interval = 2

@@ -11,6 +11,7 @@ from metadrive.component.map.base_map import BaseMap
 from metadrive.component.road_network import Road
 from metadrive.component.vehicle.base_vehicle import BaseVehicle
 from metadrive.constants import TARGET_VEHICLES, TRAFFIC_VEHICLES, OBJECT_TO_AGENT, AGENT_TO_OBJECT
+from metadrive.examples.ppo_expert.custom_expert import get_dest_heading
 from metadrive.manager.base_manager import BaseManager
 from metadrive.utils import merge_dicts
 
@@ -416,3 +417,266 @@ class MixedPGTrafficManager(PGTrafficManager):
             self.block_triggered_vehicles.append(block_vehicles)
             vehicle_num += len(vehicles_on_block)
         self.block_triggered_vehicles.reverse()
+
+import cv2
+
+class HumanoidManager(BaseManager):
+    VEHICLE_GAP = 10  # m
+
+    def __init__(self):
+        """
+        Control the whole traffic flow
+        """
+        super(HumanoidManager, self).__init__()
+
+        self._traffic_vehicles = []
+
+        # triggered by the event. TODO(lqy) In the future, event trigger can be introduced
+        self.block_triggered_vehicles = []
+
+        # traffic property
+        self.mode = self.engine.global_config["traffic_mode"]
+        self.random_traffic = self.engine.global_config["random_traffic"]
+        self.density = self.engine.global_config["traffic_density"]
+        self.respawn_lanes = None
+
+    def reset(self):
+        """
+        Generate traffic on map, according to the mode and density
+        :return: List of Traffic vehicles
+        """
+        map = self.current_map
+        self.walkable_mask = self.get_walkable_mask(map)
+
+        # cv2.imwrite("map_mask.jpg", self.map_mask)
+        # exit(0)
+        logging.debug("load scene {}".format("Use random traffic" if self.random_traffic else ""))
+
+        # update vehicle list
+        self.block_triggered_vehicles = []
+
+        traffic_density = self.density
+        if abs(traffic_density) < 1e-2:
+            return
+        # self.respawn_lanes = self._get_available_respawn_lanes(map)
+        if self.mode == TrafficMode.Respawn:
+            # add respawn vehicle
+            self._create_respawn_vehicles(map, traffic_density)
+        elif self.mode == TrafficMode.Trigger or self.mode == TrafficMode.Hybrid:
+            self._create_humanoid_once(map, traffic_density)
+            self._create_vehicles_once(map, traffic_density)
+            
+        else:
+            raise ValueError("No such mode named {}".format(self.mode))
+
+    def before_step(self):
+        """
+        All traffic vehicles make driving decision here
+        :return: None
+        """
+        # trigger vehicles
+        engine = self.engine
+        if self.mode != TrafficMode.Respawn:
+            for v in engine.agent_manager.active_agents.values():
+                ego_lane_idx = v.lane_index[:-1]
+                ego_road = Road(ego_lane_idx[0], ego_lane_idx[1])
+                if len(self.block_triggered_vehicles) > 0 and \
+                        ego_road == self.block_triggered_vehicles[-1].trigger_road:
+                    block_vehicles = self.block_triggered_vehicles.pop()
+                    self._traffic_vehicles += list(self.get_objects(block_vehicles.vehicles).values())
+        for v in self._traffic_vehicles:
+            try:
+                p = self.engine.get_policy(v.name)
+                v.before_step(p.act())
+            except Exception:
+                pass
+        self.step_action()
+        return dict()
+
+    def _create_vehicles_once(self, map: BaseMap, traffic_density: float) -> None:
+        """
+        Trigger mode, vehicles will be triggered only once, and disappear when arriving destination
+        :param map: Map
+        :param traffic_density: it can be adjusted each episode
+        :return: None
+        """
+        vehicle_num = 0
+        for block in map.blocks[1:]:
+
+            # Propose candidate locations for spawning new vehicles
+            trigger_lanes = block.get_intermediate_spawn_lanes()
+            if self.engine.global_config["need_inverse_traffic"] and block.ID in ["S", "C", "r", "R"]:
+                neg_lanes = block.block_network.get_negative_lanes()
+                self.np_random.shuffle(neg_lanes)
+                trigger_lanes += neg_lanes
+            potential_vehicle_configs = []
+            for lanes in trigger_lanes:
+                for l in lanes:
+                    if hasattr(self.engine, "object_manager") and l in self.engine.object_manager.accident_lanes:
+                        continue
+                    potential_vehicle_configs += self._propose_vehicle_configs(l)
+
+            # How many vehicles should we spawn in this block?
+            total_length = sum([lane.length for lanes in trigger_lanes for lane in lanes])
+            total_spawn_points = int(math.floor(total_length / self.VEHICLE_GAP))
+            total_vehicles = int(math.floor(total_spawn_points * traffic_density))
+
+            # Generate vehicles!
+            vehicles_on_block = []
+            self.np_random.shuffle(potential_vehicle_configs)
+            selected = potential_vehicle_configs[:min(total_vehicles, len(potential_vehicle_configs))]
+            # print("We have {} candidates! We are spawning {} vehicles!".format(total_vehicles, len(selected)))
+
+            from metadrive.policy.idm_policy import IDMPolicy
+            for v_config in selected:
+                vehicle_type = self.random_vehicle_type()
+                v_config.update(self.engine.global_config["traffic_vehicle_config"])
+                random_v = self.spawn_object(vehicle_type, vehicle_config=v_config)
+                self.add_policy(random_v.id, IDMPolicy, random_v, self.generate_seed())
+                vehicles_on_block.append(random_v.name)
+
+            trigger_road = block.pre_block_socket.positive_road
+            block_vehicles = BlockVehicles(trigger_road=trigger_road, vehicles=vehicles_on_block)
+
+            self.block_triggered_vehicles.append(block_vehicles)
+            vehicle_num += len(vehicles_on_block)
+        self.block_triggered_vehicles.reverse()
+
+
+    def _create_humanoid_once(self, map: BaseMap, traffic_density: float) -> None:
+        """
+        Trigger mode, vehicles will be triggered only once, and disappear when arriving destination
+        :param map: Map
+        :param traffic_density: it can be adjusted each episode
+        :return: None
+        """
+        vehicle_num = 0
+        potential_vehicle_configs = []
+        for sidewalk_index in map.sidewalks.values():
+            potential_vehicle_configs += self._propose_humanoid_configs(sidewalk_index['polygon'])
+        
+        total_vehicles = 10
+        self.humanoid_on_block = []
+        self.np_random.shuffle(potential_vehicle_configs)
+        selected = potential_vehicle_configs[:min(total_vehicles, len(potential_vehicle_configs))]
+        # print("We have {} candidates! We are spawning {} vehicles!".format(total_vehicles, len(selected)))
+
+        for v_config in selected:
+            humanoid_type = self.random_humanoid_type()
+            v_config.update(self.engine.global_config["traffic_vehicle_config"])
+            random_v = self.spawn_object(humanoid_type, vehicle_config=v_config)
+            self.humanoid_on_block.append(random_v.name)
+
+    def draw_objects(self, objects, canvas):
+        w = object.WIDTH
+        h = object.LENGTH
+        position = [object.position[0], object.position[1]]
+        # As the following rotate code is for left-handed coordinates,
+        # so we plus -1 before the heading to adapt it to right-handed coordinates
+        heading = objects.heading_theta
+        heading = heading if abs(heading) > 2 * np.pi / 180 else 0
+        angle = -np.rad2deg(heading)
+        box = [p for p in [(-h / 2, -w / 2), (-h / 2, w / 2), (h / 2, w / 2), (h / 2, -w / 2)]]
+        box_rotate = [p.rotate(angle) + position for p in box]
+
+        pts = box_rotate
+        pts = pts.reshape((-1,1,2))
+        canvas = cv2.fillPoly(canvas, [pts], [255, 255, 255])
+        return canvas
+
+    def get_walkable_mask(self, map, objects=None):
+        img = np.zeros((256, 256, 3), np.uint8)
+        line_sample_interval = 2
+
+        all_lanes = map.get_map_features(line_sample_interval)
+
+        crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
+        sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
+
+        for key in crosswalk_keys:
+            obj = all_lanes[key]
+            pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            pts = pts.reshape((-1,1,2))
+            cv2.fillPoly(img, [pts], [255, 255, 255])
+
+        for key in sidewalk_keys:
+            obj = all_lanes[key]
+            pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            pts = pts.reshape((-1,1,2))
+            cv2.fillPoly(img, [pts], [255, 255, 255])
+
+        # #################
+        # for v in objects:
+        #     c = v.color
+        #     h = v.heading_theta
+        #     h = h if abs(h) > 2 * np.pi / 180 else 0
+        #     # x = abs(int(i))
+        #     # alpha_f = x / len(self.history_objects)
+        #     # if self.semantic_map:
+        #     #     c = TopDownSemanticColor.get_color(v.type) * (1 - alpha_f) + alpha_f * 255
+        #     # else:
+        #     #     c = (c[0] + alpha_f * (255 - c[0]), c[1] + alpha_f * (255 - c[1]), c[2] + alpha_f * (255 - c[2]))
+        #     # ObjectGraphics.display(object=v, surface=img, heading=h, color=c, draw_contour=False)
+        #     draw_objects(v, canvas=img)
+        return img
+
+    @property
+    def current_map(self):
+        return self.engine.map_manager.current_map
+
+    def _propose_vehicle_configs(self, lane: AbstractLane):
+        potential_vehicle_configs = []
+        total_num = int(lane.length / self.VEHICLE_GAP)
+        vehicle_longs = [i * self.VEHICLE_GAP for i in range(total_num)]
+        # Only choose given number of vehicles
+        for long in vehicle_longs:
+            random_vehicle_config = {"spawn_lane_index": lane.index, "spawn_longitude": long, "enable_reverse": False}
+            potential_vehicle_configs.append(random_vehicle_config)
+        return potential_vehicle_configs
+    
+    def _propose_humanoid_configs(self, polygon):
+        def get_random_points_in_polygon(polygon, number_point):
+            points = polygon[:number_point]
+            return points
+
+        potential_vehicle_configs = []
+        points = get_random_points_in_polygon(polygon, 3)
+        heading = 0
+
+        for point in points:
+            random_vehicle_config = {"spawn_position_heading": [point, heading]}
+            potential_vehicle_configs.append(random_vehicle_config)
+        return potential_vehicle_configs
+
+    def random_humanoid_type(self):
+        from metadrive.component.agents.pedestrian.pedestrian_type import SimplePedestrian
+        
+        return SimplePedestrian
+
+    def step_action(self):
+        def get_next_positions(map, cur_states):
+            val_np = np.array(list(cur_states.values()))
+            val_np = val_np + np.random.randn(*val_np.shape) / 10
+            return val_np.tolist()
+        
+        def apply_actions(objs, dest_pos):
+            for objname, pos in zip(objs, dest_pos):
+                obj = list(self.engine.get_object(objname).values())[0]
+                obj.set_position(pos)
+                # heading = get_dest_heading(obj, pos)
+                # obj._body.setAngularMovement(heading)
+                # obj._body.setLinearMovement(LPoint3f(0 , 1, 0) * 3, True)
+
+
+        humanoid_state = {}
+        objs = self.get_objects(self.humanoid_on_block)
+        for name, o in objs.items():
+            humanoid_state[name] = o.position
+        
+        dest_pos = get_next_positions(self.walkable_mask, humanoid_state)
+        apply_actions(objs, dest_pos)
+
+    def random_vehicle_type(self):
+        from metadrive.component.vehicle.vehicle_type import random_vehicle_type
+        vehicle_type = random_vehicle_type(self.np_random, [0.2, 0.3, 0.3, 0.2, 0.0])
+        return vehicle_type
