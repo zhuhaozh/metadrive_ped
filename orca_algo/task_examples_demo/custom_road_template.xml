@@ -2,8 +2,7 @@
     <agents number="1" type="orca">
         <default_parameters size="1" movespeed="1" agentsmaxnum="20" timeboundary="5.4" sightradius="3.0" timeboundaryobst="33"/>
     </agents>
-    <obstacles number="0">
-<!--         
+    <obstacles number="6">
         <obstacle>
             <vertex xr="109" yr="247" />
             <vertex xr="120" yr="247" />
@@ -106,7 +105,7 @@
             <vertex xr="256" yr="0" />
             <vertex xr="0" yr="0" />
         </obstacle>
-         -->
+
     </obstacles>
     <map>
     <width>256</width>
