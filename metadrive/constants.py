@@ -551,8 +551,15 @@ class PedestrianAssetPaths:
     # PEDESTRIAN_ROOT = "/home/PJLAB/zhuhao/workspace/human_in_simulators/metadrive_code/synbody_mats/sensedressing-sample-assets/gltf/"
     PEDESTRIAN_TEXTURE = {
         "0": {'path': PEDESTRIAN_ROOT + "characters_yup/0000403_people_baked.gltf", 'height': 1.29714}, 
-        "1": {'path': PEDESTRIAN_ROOT + "characters_yup/0009203_people_baked.gltf", 'height': 1.23252}
-    }
+        "1": {'path': PEDESTRIAN_ROOT + "characters_yup/0009203_people_baked.gltf", 'height': 1.23252},
+        
+        "2": {'path': PEDESTRIAN_ROOT + "characters_yup/0000001.gltf", 'height': 1.29714},  # 
+        "3": {'path': PEDESTRIAN_ROOT + "characters_yup/0000002.gltf", 'height': 1.29714},  # 
+        "4": {'path': PEDESTRIAN_ROOT + "characters_yup/0000006.gltf", 'height': 1.29714},  # 
+        "5": {'path': PEDESTRIAN_ROOT + "characters_yup/0000007.gltf", 'height': 1.29714},  # 
+        "6": {'path': PEDESTRIAN_ROOT + "characters_yup/0000010.gltf", 'height': 1.29714},  # 
+    }    
+    
     PEDESTRIAN_MOTIONS = {
         'walk': PEDESTRIAN_ROOT + 'motions_yup/2023_09_04T16_34_02-0000_treadmill_norm-fps_30.gltf',
         'run': PEDESTRIAN_ROOT + 'motions_yup/2023_09_04T16_36_43-0008_normal_jog2-fps_30.gltf',

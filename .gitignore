@@ -5,6 +5,8 @@
 /.idea/
 *.glf
 *.rar
+/tmp/
+/orca_algo/build/
 /docs/build/
 /docs/.idea/
 /build/

@@ -83,5 +83,5 @@ def get_dest_heading(obj, dest_pos):
     vec_to_2d = dest - position 
     dist_to = vec_to_2d.length()
 
-    heading = Vec2(*obj.heading).signedAngleDeg(vec_to_2d) * 3
+    heading = Vec2(*obj.heading).signedAngleDeg(vec_to_2d)
     return heading

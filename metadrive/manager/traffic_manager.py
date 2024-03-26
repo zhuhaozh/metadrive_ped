@@ -13,7 +13,9 @@ from metadrive.component.vehicle.base_vehicle import BaseVehicle
 from metadrive.constants import TARGET_VEHICLES, TRAFFIC_VEHICLES, OBJECT_TO_AGENT, AGENT_TO_OBJECT
 from metadrive.examples.ppo_expert.custom_expert import get_dest_heading
 from metadrive.manager.base_manager import BaseManager
+from metadrive.policy.orca_planning_utils import OrcaPlanning
 from metadrive.utils import merge_dicts
+
 
 BlockVehicles = namedtuple("block_vehicles", "trigger_road vehicles")
 
@@ -447,9 +449,11 @@ class HumanoidManager(BaseManager):
         """
         map = self.current_map
         self.walkable_mask = self.get_walkable_mask(map)
-
-        # cv2.imwrite("map_mask.jpg", self.map_mask)
-        # exit(0)
+        num = 5
+        self.planning = OrcaPlanning("./orca_algo/task_examples_demo/custom_road_template.xml")
+        self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], num)
+        self.planning.get_planing(self.starts, self.goals)
+        
         logging.debug("load scene {}".format("Use random traffic" if self.random_traffic else ""))
 
         # update vehicle list
@@ -464,7 +468,7 @@ class HumanoidManager(BaseManager):
             self._create_respawn_vehicles(map, traffic_density)
         elif self.mode == TrafficMode.Trigger or self.mode == TrafficMode.Hybrid:
             self._create_humanoid_once(map, traffic_density)
-            self._create_vehicles_once(map, traffic_density)
+            # self._create_vehicles_once(map, traffic_density)
             
         else:
             raise ValueError("No such mode named {}".format(self.mode))
@@ -550,15 +554,15 @@ class HumanoidManager(BaseManager):
         :param traffic_density: it can be adjusted each episode
         :return: None
         """
-        vehicle_num = 0
+        
         potential_vehicle_configs = []
         for sidewalk_index in map.sidewalks.values():
             potential_vehicle_configs += self._propose_humanoid_configs(sidewalk_index['polygon'])
         
-        total_vehicles = 10
+        total_humanoids = len(self.starts)
         self.humanoid_on_block = []
         self.np_random.shuffle(potential_vehicle_configs)
-        selected = potential_vehicle_configs[:min(total_vehicles, len(potential_vehicle_configs))]
+        selected = potential_vehicle_configs[:min(total_humanoids, len(potential_vehicle_configs))]
         # print("We have {} candidates! We are spawning {} vehicles!".format(total_vehicles, len(selected)))
 
         for v_config in selected:
@@ -592,16 +596,23 @@ class HumanoidManager(BaseManager):
 
         crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
         sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
-
+        all_pts = []
         for key in crosswalk_keys:
             obj = all_lanes[key]
+            # pts = np.array([(p[0] - 100, p[1]) for p in np.array(obj["polygon"]) * 2 + 100], np.int32)
             pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"])], np.int32)
+            all_pts.append(pts)
             pts = pts.reshape((-1,1,2))
             cv2.fillPoly(img, [pts], [255, 255, 255])
 
         for key in sidewalk_keys:
             obj = all_lanes[key]
+            # pts = np.array([(p[0] - 100, p[1]) for p in np.array(obj["polygon"]) * 2 + 100], np.int32)
             pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
+            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"])], np.int32)
+
+            all_pts.append(pts)
             pts = pts.reshape((-1,1,2))
             cv2.fillPoly(img, [pts], [255, 255, 255])
 
@@ -654,26 +665,31 @@ class HumanoidManager(BaseManager):
         return SimplePedestrian
 
     def step_action(self):
-        def get_next_positions(map, cur_states):
-            val_np = np.array(list(cur_states.values()))
-            val_np = val_np + np.random.randn(*val_np.shape) / 10
-            return val_np.tolist()
-        
         def apply_actions(objs, dest_pos):
+            # print("------------------------------------------")
             for objname, pos in zip(objs, dest_pos):
                 obj = list(self.engine.get_object(objname).values())[0]
+                pos = self.planning.coord_orca_to_md(pos)
+                heading = get_dest_heading(obj, pos)
+                # print(heading)
+                # obj.set_heading(heading)
                 obj.set_position(pos)
-                # heading = get_dest_heading(obj, pos)
-                # obj._body.setAngularMovement(heading)
+
+                obj._body.setAngularMovement(heading)
+                # obj.set_roll(heading)
+                # print(heading)
                 # obj._body.setLinearMovement(LPoint3f(0 , 1, 0) * 3, True)
+            # print("------------------------------------------")
 
-
-        humanoid_state = {}
         objs = self.get_objects(self.humanoid_on_block)
-        for name, o in objs.items():
-            humanoid_state[name] = o.position
+
+        if not self.planning.has_next():
+            # self.starts = self.goals
+            # self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], len(self.starts))
+            self.planning.get_planing(self.starts, self.goals)
+
+        dest_pos = self.planning.get_next()
         
-        dest_pos = get_next_positions(self.walkable_mask, humanoid_state)
         apply_actions(objs, dest_pos)
 
     def random_vehicle_type(self):
