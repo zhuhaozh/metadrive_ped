@@ -449,9 +449,9 @@ class HumanoidManager(BaseManager):
         """
         map = self.current_map
         self.walkable_mask = self.get_walkable_mask(map)
-        num = 5
+        self.num_humanoid_agent = 25
         self.planning = OrcaPlanning("./orca_algo/task_examples_demo/custom_road_template.xml")
-        self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], num)
+        self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
         self.planning.get_planing(self.starts, self.goals)
         
         logging.debug("load scene {}".format("Use random traffic" if self.random_traffic else ""))
@@ -684,10 +684,10 @@ class HumanoidManager(BaseManager):
         objs = self.get_objects(self.humanoid_on_block)
 
         if not self.planning.has_next():
-            # self.starts = self.goals
-            # self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], len(self.starts))
+            self.starts = self.goals
+            _, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
             self.planning.get_planing(self.starts, self.goals)
-
+        # print(self.planning.length)
         dest_pos = self.planning.get_next()
         
         apply_actions(objs, dest_pos)

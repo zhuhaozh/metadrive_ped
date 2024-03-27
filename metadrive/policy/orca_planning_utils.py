@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, './orca_algo/build')
 import bind
 import numpy as np
+import math
 
 class OrcaPlanning:
     def __init__(self, template_xml_file, map_mask=None):
@@ -36,7 +37,7 @@ class OrcaPlanning:
             # print(cnt)
             # id="1" size="0.3" start.xr="130" start.yr="176" goal.xr="116" goal.yr="243"
             agent.set('id', f'{cnt}')
-            agent.set('size', f'{0.01}')
+            agent.set('size', f'{1}')
 
             agent.set('start.xr', f'{pos[0]}')
             agent.set('start.yr', f'{pos[1]}')
@@ -129,14 +130,13 @@ class OrcaPlanning:
     def coord_orca_to_md(self, pos, mask_size=256):
         posx = pos[0] - 50
         posy = mask_size - pos[1] - 50
-
         return (posx, posy)
 
     def coord_md_to_orca(self, pos, mask_size=255):
         posx =  pos[0] + 50
         posy = mask_size - pos[1] - 50
         return (posx, posy)
-
+        
     def _random_starts_and_goals(self, map_mask, num):
         def filter_func(x):
             # positions = [(0, 0)]
@@ -159,35 +159,66 @@ class OrcaPlanning:
         len1 = min(len1, num)
 
         return starts[:len1], goals[:len1]
-    
-    def random_starts_and_goals(self, map_mask, num):
-        left_num = num
-        starts, goals = [], []
+  
+    def _random_points(self, map_mask, num):
+        def in_walkable_area(x):
+            # positions = [(0, 0)]
+            # positions = [(0, 0), (2, 2), (-2, -2), (-2, 2), (2, -2)]
+            positions = [(0, 0), (3, 3), (-3, -3), (-3, 3), (3, -3)]
+            try:
+                for pos in positions:
+                    if map_mask[x[1] + pos[0], x[0] + pos[1]] != 255:
+                        return False
+                return True
+            except Exception:
+                return False
+                    
+        def is_close_to_points(x, pts, filter_rad=3):
+            min_dist = 9999
+            for pt in pts:
+                min_dist = min(min_dist, math.dist(x, pt))
+            
+            if min_dist < filter_rad:
+                return True
+            else:
+                return False
 
-        while left_num > 0:
-            start, goal = self._random_starts_and_goals(map_mask, left_num)
-            left_num -= len(start)
-            # print(left_num)
-            starts += start
-            goals += goal
-    
+        pts = []
+        while len(pts) < num:
+            pt = (np.random.randint(0, 255), np.random.randint(0, 255))
+            if not in_walkable_area(pt):
+                continue
+            if len(pts) > 0 and is_close_to_points(pt, pts):
+                continue
+            pts.append(pt)
+        pts = [(x[0], 255 - x[1]) for x in pts]
+
+        return pts
+
+    def random_starts_and_goals(self, map_mask, num):
+        starts = self._random_points(map_mask, num)
+        goals = self._random_points(map_mask, num)
+
         return starts, goals
+
 
 # # # planning = OrcaPlanning("/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/orca_algo/task_examples_demo/custom_road2_template.xml")
 # # # planning.get_planing([[154, 176], [130,176], [140,176]], [[96,138],[116,243], [116,243]])
 
-# # # # <agent id="0" size="0.01" start.xr="110" start.yr="216" goal.xr="119.5" goal.yr="250.5"/>
+# # # # # <agent id="0" size="0.01" start.xr="110" start.yr="216" goal.xr="119.5" goal.yr="250.5"/>
 # planning = OrcaPlanning("/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/orca_algo/task_examples_demo/custom_road_template.xml")
-# # # planning.get_planing([[110, 216]], [[119.5,250.5]])
-# # # for i in range(10):
-# # #     a = planning.get_next()
-# # #     print(a)
-# # pos = planning.coord_md_to_orca([100, 120])
-# # pos2 = planning.coord_orca_to_md(pos)
+# # # # planning.get_planing([[110, 216]], [[119.5,250.5]])
+# # # # for i in range(10):
+# # # #     a = planning.get_next()
+# # # #     print(a)
+# # # pos = planning.coord_md_to_orca([100, 120])
+# # # pos2 = planning.coord_orca_to_md(pos)
 
-# # print(pos)
-# # print(pos2)
+# # # print(pos)
+# # # print(pos2)
 # import cv2
-# mask = cv2.imread("/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/map_mask1.png")[..., 0]
+# mask = cv2.imread("/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/tmp/map_mask1.png")[..., 0]
 # starts, goals = planning.random_starts_and_goals(mask, 100)
 # print(len(starts))
+# starts2 = planning.filter_close_points(starts, (2, 2))
+# print(len(starts2))
