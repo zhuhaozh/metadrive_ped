@@ -89,7 +89,7 @@ class InterSection(PGBlock):
             # print(right_lane.polygon)
 
             no_cross = no_cross and success
-            if i != 4:
+            if i != 3:
                 lane_num = self.positive_lane_num if i == 1 else self.lane_num_intersect
                 exit_road = Road(self.road_node(i, 0), self.road_node(i, 1))
                 no_cross = CreateRoadFrom(

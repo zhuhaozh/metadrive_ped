@@ -346,7 +346,12 @@ class PGBlock(BaseBlock):
         if ">" in str(lane.index):
             return
 
-        lane_names = list(filter(lambda x: not x.startswith("-"), list(set(self.block_network.graph.keys()) - set(self.block_network.graph['>>>'].keys()))))
+        set1 = set(self.block_network.graph.keys())
+        try:
+            set2 = set(self.block_network.graph['>>>'].keys())
+        except Exception:
+            set2 = set()
+        lane_names = list(filter(lambda x: not x.startswith("-"), list(set1 - set2)))
         lane_name = "#".join([str(x) for x in lane.index])
         for name in lane_names:
             if name in lane_name:
