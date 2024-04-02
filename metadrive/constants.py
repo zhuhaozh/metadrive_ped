@@ -601,7 +601,7 @@ class PedestrianAssetPaths:
         'run': PEDESTRIAN_ROOT + 'motions_yup/jog.gltf',
         'idle': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
 
-        'loop_start': 1
+        'loop_start': 10
         # 'walk': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
         # 'run': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
         # 'idle': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',

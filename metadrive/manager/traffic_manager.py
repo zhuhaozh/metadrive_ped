@@ -449,7 +449,8 @@ class HumanoidManager(BaseManager):
         :return: List of Traffic vehicles
         """
         map = self.current_map
-        self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
+        # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
+        self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
         # self.walkable_mask = cv2.imread("tmp/map_mask.png")
         # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
@@ -625,7 +626,7 @@ class HumanoidManager(BaseManager):
             plt.fill(pts[:, 0, 0], pts[:, 0, 1])
         offset_x, offset_y = 0, 0 
         cfg = self.engine.global_config['map']
-        save_mask_name = f"output/map_masks/test_walkable_mask_{cfg}.png"
+        save_mask_name = f"output/map_masks/test_walkable_mask_old_{cfg}.png"
         if not os.path.exists(save_mask_name):
             cv2.imwrite(save_mask_name, img)
         return img, offset_x, offset_y
@@ -721,9 +722,9 @@ class HumanoidManager(BaseManager):
             # print("------------------------------------------")
             for objname, pos in zip(objs, dest_pos):
                 obj = list(self.engine.get_object(objname).values())[0]
-                # pos = pos[0] - self.walkable_offset_x, pos[1] - self.walkable_offset_y
+                pos = pos[0] + self.walkable_offset_x, pos[1] + self.walkable_offset_y
 
-                pos = self.planning.coord_orca_to_md(pos)
+                # pos = self.planning.coord_orca_to_md(pos)
                 heading = get_dest_heading(obj, pos)
                 # print(heading)
                 # obj.set_heading(heading)

@@ -38,7 +38,7 @@ from metadrive.utils.math import wrap_to_pi
 from metadrive.utils.pg.utils import rect_region_detection
 from metadrive.utils.utils import get_object_from_node
 from panda3d.core import BitMask32
-
+from copy import deepcopy
 import random
 logger = get_logger()
 
@@ -538,12 +538,12 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         if self.render:
             self.actor = Actor(self.ACTOR_PATH)
             
-            
-            rotation = 180 if 'rotation' not in self.MOTION_PATH else self.MOTION_PATH.pop('rotation')
-            loop_start = 0 if 'loop_start' not in self.MOTION_PATH else self.MOTION_PATH.pop('loop_start')
+            motion_path = deepcopy(self.MOTION_PATH)
+            rotation = 180 if 'rotation' not in motion_path else motion_path.pop('rotation')
+            loop_start = 0 if 'loop_start' not in motion_path else motion_path.pop('loop_start')
             
             self.cur_state = random.choice(self.STATES)
-            self.actor.loadAnims(self.MOTION_PATH)
+            self.actor.loadAnims(motion_path)
             self.actor.loop(self.cur_state, fromFrame=loop_start)
             
             self.actor.setHpr(self.actor.getH() + rotation, self.actor.getP() + 0, self.actor.getR() + 0)
