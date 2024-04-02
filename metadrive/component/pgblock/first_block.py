@@ -8,7 +8,8 @@ from metadrive.component.road_network import Road
 from metadrive.component.road_network.node_road_network import NodeRoadNetwork
 from metadrive.constants import Decoration, PGLineType
 from metadrive.engine.core.physics_world import PhysicsWorld
-
+from metadrive.constants import PGDrivableAreaProperty, PGLineType
+import re, numpy as np
 
 class FirstPGBlock(PGBlock):
     """
@@ -113,3 +114,28 @@ class FirstPGBlock(PGBlock):
     def destruct_block(self, physics_world: PhysicsWorld):
         """This block can not be destructed"""
         pass
+
+    def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
+        """
+        Construct the sidewalk for this lane
+        Args:
+            block:
+
+        Returns:
+        """
+        crosswalk_width = lane.width * 3
+        start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.2
+        side_lat = start_lat + crosswalk_width - 0.2
+
+
+        build_at_start = True
+        build_at_end = True
+        if build_at_end:
+            longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index)
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            
+        if build_at_start:
+            longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index) + "_S"
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)

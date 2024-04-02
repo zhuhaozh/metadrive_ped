@@ -12,6 +12,7 @@ from metadrive.component.road_network import Road
 from metadrive.component.road_network.node_road_network import NodeRoadNetwork
 from metadrive.constants import PGDrivableAreaProperty
 from metadrive.constants import PGLineType
+import re
 
 logger = get_logger()
 
@@ -339,6 +340,7 @@ class PGBlock(BaseBlock):
             block:
 
         Returns:
+        """
 
         """
         build_at_start = True
@@ -375,6 +377,59 @@ class PGBlock(BaseBlock):
             longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index) + "_S"
             self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+        """
+        # # Straight	        S
+        # # Circular	        C
+        # # InRamp	        r	
+        # # OutRamp	        R
+        # # Roundabout	    O	
+        # # Intersection	    X
+        # # Merge	            y	
+        # # Split	            Y
+        # # Tollgate	        $	
+        # # Parking lot	    P.x
+        # # TInterection	    T	
+        # # Fork	            WIP
+        # # block_ids = ["S","C","r","R","O","X","y","Y","$","P", "T"]
+
+        # def filter_block_id(lane_index):
+        #     block_ids = ["r", "R"]
+        #     x0 = re.findall("[a-zA-Z]", lane_index[0])
+        #     if len(x0) > 1 or (len(x0) == 1 and x0[0] in block_ids):
+        #         return None
+                
+        #     x1 = re.findall("[a-zA-Z]", lane_index[1])
+        #     if len(x1) > 1 or (len(x1) == 1 and x1[0] in block_ids):
+        #         return None
+
+        #     x00 = x0[0] if len(x0) == 1 else "#"
+        #     x10 = x1[0] if len(x1) == 1 else "#"
+
+        #     print("-----" * 10, lane_index)
+        #     return True, x00, x10
+        
+        # block_flag, x0, x1 = filter_block_id(lane.index) 
+        # if not block_flag:
+        #     return
+
+        # build_at_start = True
+        # build_at_end = True
+
+        # start_lat = +lane.width_at(0)  - PGDrivableAreaProperty.CROSSWALK_WIDTH # * 2.9#  / 2 + 0.2
+        # side_lat = start_lat + PGDrivableAreaProperty.CROSSWALK_WIDTH #  * 4.95
+
+        # if x0 == "O" or x1 == "O":
+        #     side_lat = start_lat + PGDrivableAreaProperty.CROSSWALK_WIDTH #  * 4.95
+    
+        # if build_at_end:
+        #     longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+        #     key = "CRS_" + str(lane.index)
+        #     self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            
+        # if build_at_start:
+        #     longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+        #     key = "CRS_" + str(lane.index) + "_S"
+        #     self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
 
 
     def build_crosswalk_block(self, key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat):
@@ -393,7 +448,7 @@ class PGBlock(BaseBlock):
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
         
-        self.sidewalks[key] = {
+        self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
             "type": MetaDriveType.BOUNDARY_SIDEWALK,
             "polygon": polygon,

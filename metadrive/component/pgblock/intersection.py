@@ -1,7 +1,7 @@
 import copy
 from metadrive.type import MetaDriveType
 from collections import deque
-
+import re
 import numpy as np
 
 from metadrive.component.lane.straight_lane import StraightLane
@@ -9,7 +9,7 @@ from metadrive.component.pgblock.create_pg_block_utils import CreateAdverseRoad,
     create_bend_straight
 from metadrive.component.pgblock.pg_block import PGBlock, PGBlockSocket
 from metadrive.component.road_network import Road
-from metadrive.constants import PGLineType
+from metadrive.constants import PGDrivableAreaProperty, PGLineType
 from metadrive.utils.pg.utils import check_lane_on_road
 from metadrive.component.pg_space import ParameterSpace, Parameter, BlockParameterSpace
 
@@ -45,7 +45,6 @@ class InterSection(PGBlock):
     # LEFT_TURN_NUM = 1 now it is useless
 
     def __init__(self, *args, **kwargs):
-        self.cnt = 0 
         if "radius" in kwargs:
             self.radius = kwargs.pop("radius")
         else:
@@ -53,7 +52,6 @@ class InterSection(PGBlock):
         super(InterSection, self).__init__(*args, **kwargs)
         if self.radius is None:
             self.radius = self.get_config(copy=False)[Parameter.radius]
-
 
     def _try_plug_into_previous_block(self) -> bool:
         para = self.get_config()
@@ -67,27 +65,15 @@ class InterSection(PGBlock):
         attach_road = self.pre_block_socket.positive_road
         _attach_road = self.pre_block_socket.negative_road
         attach_lanes = attach_road.get_lanes(self._global_network)
-        # current straight left node name, rotate it to fit different part
+        # right straight left node name, rotate it to fit different part
         intersect_nodes = deque(
             [self.road_node(0, 0),
              self.road_node(1, 0),
              self.road_node(2, 0), _attach_road.start_node]
         )
 
-
-        # for i in range(3):
-        #     self.draw_polygon(attach_lanes[i].polygon)
-        #     input("Press Enter to continue...")
-
-
-
         for i in range(4):
             right_lane, success = self._create_part(attach_lanes, attach_road, self.radius, intersect_nodes, i)
-            # print(self.block_network)
-            # self.draw_polygons_in_network_block(self.block_network)
-
-            # print(right_lane.polygon)
-
             no_cross = no_cross and success
             if i != 3:
                 lane_num = self.positive_lane_num if i == 1 else self.lane_num_intersect
@@ -100,7 +86,6 @@ class InterSection(PGBlock):
                     self._global_network,
                     ignore_intersection_checking=self.ignore_intersection_checking
                 ) and no_cross
-                # self.draw_polygons_in_network_block(self.block_network)
                 no_cross = CreateAdverseRoad(
                     exit_road,
                     self.block_network,
@@ -112,17 +97,6 @@ class InterSection(PGBlock):
                 self.add_sockets(socket)
                 attach_road = -exit_road
                 attach_lanes = attach_road.get_lanes(self.block_network)
-                # self.draw_polygons_in_network_block(self.block_network)
-        # exit(0)
-        # for i in len()
-        # self.draw_polygon(self.block_network.graph['>>>']['1X2_0_'][2].polygon)
-        # input("Press Enter to continue...")
-        # self.draw_polygon(self.block_network.graph['>>>']['1X1_0_'][2].polygon)
-        # input("Press Enter to continue...")
-        # self.draw_polygon(self.block_network.graph['>>>']['1X0_0_'][2].polygon)
-        # input("Press Enter to continue...")
-        # self.draw_polygons_in_network_block(self.block_network)
-
         return no_cross
 
     def _create_part(self, attach_lanes, attach_road: Road, radius: float, intersect_nodes: deque,
@@ -280,3 +254,29 @@ class InterSection(PGBlock):
         respawn_lanes = self.get_respawn_lanes()
         return respawn_lanes
 
+
+    def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
+        """
+        Construct the sidewalk for this lane
+        Args:
+            block:
+
+        Returns:
+        """
+
+        crosswalk_width = lane.width * 3
+        start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.2
+        side_lat = start_lat + crosswalk_width - 0.2
+
+
+        build_at_start = True
+        build_at_end = True
+        if build_at_end:
+            longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index)
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            
+        if build_at_start:
+            longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
+            key = "CRS_" + str(lane.index) + "_S"
+            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
