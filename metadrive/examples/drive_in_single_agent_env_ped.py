@@ -16,8 +16,36 @@ from metadrive import MetaDriveEnv
 from metadrive.component.sensors.rgb_camera import RGBCamera
 from metadrive.constants import HELP_MESSAGE
 
+"""
+Block Type	    ID
+Straight	    S
+Circular	    C
+InRamp	        r	
+OutRamp	        R
+Roundabout	    O	
+Intersection	X
+Merge	        y	
+Split	        Y
+Tollgate	    $	
+Parking lot	    P.x
+TInterection	T	
+Fork	        WIP
+"""
+# CR(r) -> blank BEV
+
 if __name__ == "__main__":
-    config = dict(map="X",
+    # config = dict(map="CSRSrSO", # blank BEV
+    # config = dict(map="SRSrSC", # blank BEV
+    # config = dict(map="SCyCYC",
+    # config = dict(map="XCOS$S",
+    # config = dict(map="SrTRSX",
+    # config = dict(map="rR",
+    # config = dict(map="XSTCOX",
+    config = dict(map="XSO",
+    # config = dict(map="XSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCS",
+    # config = dict(map="XSCSOTSCCC",
+    # config = dict(map="XSCSOTSCCCCCCSSTOC",
+    # config = dict(map="SCyCYC",
         # controller="steering_wheel",
         use_render=True,
         manual_control=True,
