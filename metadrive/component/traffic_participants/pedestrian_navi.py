@@ -31,6 +31,7 @@ from metadrive.utils import Config, safe_clip_for_small_array
 import random
 
 
+@DeprecationWarning
 class PedestrianBase(BaseTrafficParticipant):
     MASS = 70  # kg
     TYPE_NAME = MetaDriveType.PEDESTRIAN
