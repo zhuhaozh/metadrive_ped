@@ -3,9 +3,10 @@ import logging
 from collections import namedtuple
 from typing import Dict
 
+import os
 import math
+import matplotlib.pyplot as plt
 import numpy as np
-
 from metadrive.component.lane.abs_lane import AbstractLane
 from metadrive.component.map.base_map import BaseMap
 from metadrive.component.road_network import Road
@@ -448,11 +449,17 @@ class HumanoidManager(BaseManager):
         :return: List of Traffic vehicles
         """
         map = self.current_map
-        self.walkable_mask = self.get_walkable_mask(map)
+        self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
+        # self.walkable_mask = cv2.imread("tmp/map_mask.png")
+        # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
+
         self.num_humanoid_agent = 25
-        self.planning = OrcaPlanning("./orca_algo/task_examples_demo/custom_road_template.xml")
+        self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
+        self.planning.generate_template_xml(self.walkable_mask)
+
         self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
-        self.planning.get_planing(self.starts, self.goals)
+        if self.num_humanoid_agent > 0:
+            self.planning.get_planning(self.starts, self.goals)
         
         logging.debug("load scene {}".format("Use random traffic" if self.random_traffic else ""))
 
@@ -494,7 +501,8 @@ class HumanoidManager(BaseManager):
                 v.before_step(p.act())
             except Exception:
                 pass
-        self.step_action()
+        if self.num_humanoid_agent > 0: 
+            self.step_action()
         return dict()
 
     def _create_vehicles_once(self, map: BaseMap, traffic_density: float) -> None:
@@ -546,7 +554,6 @@ class HumanoidManager(BaseManager):
             vehicle_num += len(vehicles_on_block)
         self.block_triggered_vehicles.reverse()
 
-
     def _create_humanoid_once(self, map: BaseMap, traffic_density: float) -> None:
         """
         Trigger mode, vehicles will be triggered only once, and disappear when arriving destination
@@ -589,14 +596,13 @@ class HumanoidManager(BaseManager):
         return canvas
 
     def get_walkable_mask(self, map, objects=None):
-        img = np.zeros((256, 256, 3), np.uint8)
         line_sample_interval = 2
-
         all_lanes = map.get_map_features(line_sample_interval)
-
         crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
         sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
         all_pts = []
+
+        img = np.zeros((256, 256, 3), np.uint8)
         for key in crosswalk_keys:
             obj = all_lanes[key]
             # pts = np.array([(p[0] - 100, p[1]) for p in np.array(obj["polygon"]) * 2 + 100], np.int32)
@@ -605,6 +611,7 @@ class HumanoidManager(BaseManager):
             all_pts.append(pts)
             pts = pts.reshape((-1,1,2))
             cv2.fillPoly(img, [pts], [255, 255, 255])
+            plt.fill(pts[:, 0, 0], pts[:, 0, 1])
 
         for key in sidewalk_keys:
             obj = all_lanes[key]
@@ -615,21 +622,66 @@ class HumanoidManager(BaseManager):
             all_pts.append(pts)
             pts = pts.reshape((-1,1,2))
             cv2.fillPoly(img, [pts], [255, 255, 255])
+            plt.fill(pts[:, 0, 0], pts[:, 0, 1])
+        offset_x, offset_y = 0, 0 
+        cfg = self.engine.global_config['map']
+        save_mask_name = f"output/map_masks/test_walkable_mask_{cfg}.png"
+        if not os.path.exists(save_mask_name):
+            cv2.imwrite(save_mask_name, img)
+        return img, offset_x, offset_y
 
-        # #################
-        # for v in objects:
-        #     c = v.color
-        #     h = v.heading_theta
-        #     h = h if abs(h) > 2 * np.pi / 180 else 0
-        #     # x = abs(int(i))
-        #     # alpha_f = x / len(self.history_objects)
-        #     # if self.semantic_map:
-        #     #     c = TopDownSemanticColor.get_color(v.type) * (1 - alpha_f) + alpha_f * 255
-        #     # else:
-        #     #     c = (c[0] + alpha_f * (255 - c[0]), c[1] + alpha_f * (255 - c[1]), c[2] + alpha_f * (255 - c[2]))
-        #     # ObjectGraphics.display(object=v, surface=img, heading=h, color=c, draw_contour=False)
-        #     draw_objects(v, canvas=img)
-        return img
+
+    def get_walkable_mask_new(self, map, objects=None):
+        def get_mask_range(all_pts):
+            max_w = 0; max_h = 0
+            min_x = 0; min_y = 0
+            
+            for pt in all_pts:
+                max_w = max(max_w, pt[:, 0].max())
+                max_h = max(max_h, pt[:, 1].max())
+
+                min_x = min(min_x, pt[:, 0].min())
+                min_y = min(min_y, pt[:, 1].min())
+
+            w = max_w - min_x
+            h = max_h - min_y
+            return w, h, min_x, min_y
+        
+        line_sample_interval = 1
+        all_lanes = map.get_map_features(line_sample_interval)
+        crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
+        sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
+        all_pts = []
+
+        for key in crosswalk_keys:
+            obj = all_lanes[key]
+            pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"])], np.int32)
+            all_pts.append(pts)
+
+        for key in sidewalk_keys:
+            obj = all_lanes[key]
+            pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"])], np.int32)
+            all_pts.append(pts)
+
+        map_x, map_y, offset_x, offset_y = get_mask_range(all_pts)
+
+        img = np.zeros((map_y, map_x, 3), np.uint8)
+
+        for pts in all_pts:
+            pts[:, 0] -= offset_x
+            pts[:, 1] -= offset_y
+            cv2.fillPoly(img, [pts], [255, 255, 255])
+        img = cv2.flip(img, 0) 
+
+        cfg = self.engine.global_config['map']
+        save_mask_name = f"output/map_masks/test_walkable_mask_{cfg}.png"
+        if not os.path.exists(save_mask_name):
+            cv2.imwrite(save_mask_name, img)
+        # exit(0)
+        # plt.axis('equal')
+       
+        return img, offset_x, offset_y
+    
 
     @property
     def current_map(self):
@@ -669,6 +721,8 @@ class HumanoidManager(BaseManager):
             # print("------------------------------------------")
             for objname, pos in zip(objs, dest_pos):
                 obj = list(self.engine.get_object(objname).values())[0]
+                # pos = pos[0] - self.walkable_offset_x, pos[1] - self.walkable_offset_y
+
                 pos = self.planning.coord_orca_to_md(pos)
                 heading = get_dest_heading(obj, pos)
                 # print(heading)
@@ -686,7 +740,7 @@ class HumanoidManager(BaseManager):
         if not self.planning.has_next():
             self.starts = self.goals
             _, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
-            self.planning.get_planing(self.starts, self.goals)
+            self.planning.get_planning(self.starts, self.goals)
         # print(self.planning.length)
         dest_pos = self.planning.get_next()
         
