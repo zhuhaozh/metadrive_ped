@@ -1,112 +1,110 @@
 <root>
-    <agents number="1" type="orca">
-        <default_parameters size="0.01" movespeed="1" agentsmaxnum="10" timeboundary="5.4" sightradius="3.0" timeboundaryobst="33" />
-        <agent id="0" size="0.01" start.xr="130" start.yr="216" goal.xr="119.5" goal.yr="250.5" /> 
-        
+    <agents number="20" type="orca-par-ecbs">
+        <default_parameters size="1" movespeed="1" agentsmaxnum="10" timeboundary="5.4" sightradius="3.0" timeboundaryobst="33" />
+      
     </agents>
     <obstacles number="6">
-        
         <obstacle>
-            <vertex xr="109" yr="247" />
-            <vertex xr="120" yr="247" />
-            <vertex xr="120" yr="219" />
             <vertex xr="109" yr="219" />
+            <vertex xr="129" yr="219" />
+            <vertex xr="129" yr="247" />
+            <vertex xr="109" yr="247" />
         </obstacle>
         <obstacle>
-            <vertex xr="141" yr="207" />
-            <vertex xr="169" yr="207" />
-            <vertex xr="169" yr="187" />
             <vertex xr="141" yr="187" />
+            <vertex xr="169" yr="187" />
+            <vertex xr="169" yr="207" />
+            <vertex xr="141" yr="207" />
         </obstacle>
         <obstacle>
-            <vertex xr="109" yr="75" />
-            <vertex xr="129" yr="75" />
-            <vertex xr="129" yr="147" />
             <vertex xr="109" yr="147" />
+            <vertex xr="129" yr="147" />
+            <vertex xr="129" yr="75" />
+            <vertex xr="109" yr="75" />
         </obstacle>
         <obstacle>
-            <vertex xr="107" yr="212" />
-            <vertex xr="130" yr="212" />
-            <vertex xr="130" yr="211" />
-            <vertex xr="131" yr="211" />
-            <vertex xr="131" yr="210" />
-            <vertex xr="132" yr="210" />
-            <vertex xr="132" yr="209" />
-            <vertex xr="134" yr="209" />
-            <vertex xr="134" yr="186" />
-            <vertex xr="132" yr="186" />
-            <vertex xr="132" yr="185" />
-            <vertex xr="131" yr="185" />
-            <vertex xr="131" yr="183" />
-            <vertex xr="130" yr="183" />
-            <vertex xr="130" yr="182" />
-            <vertex xr="107" yr="182" />
-            <vertex xr="107" yr="184" />
-            <vertex xr="106" yr="184" />
-            <vertex xr="106" yr="185" />
-            <vertex xr="105" yr="185" />
-            <vertex xr="105" yr="186" />
             <vertex xr="104" yr="187" />
-            <vertex xr="104" yr="209" />
-            <vertex xr="106" yr="209" />
-            <vertex xr="106" yr="210" />
+            <vertex xr="105" yr="186" />
+            <vertex xr="105" yr="185" />
+            <vertex xr="106" yr="185" />
+            <vertex xr="106" yr="184" />
+            <vertex xr="107" yr="184" />
+            <vertex xr="107" yr="182" />
+            <vertex xr="130" yr="182" />
+            <vertex xr="130" yr="183" />
+            <vertex xr="131" yr="183" />
+            <vertex xr="131" yr="185" />
+            <vertex xr="132" yr="185" />
+            <vertex xr="132" yr="186" />
+            <vertex xr="134" yr="186" />
+            <vertex xr="134" yr="209" />
+            <vertex xr="132" yr="209" />
+            <vertex xr="132" yr="210" />
+            <vertex xr="131" yr="210" />
+            <vertex xr="131" yr="211" />
+            <vertex xr="130" yr="211" />
+            <vertex xr="130" yr="212" />
+            <vertex xr="107" yr="212" />
             <vertex xr="107" yr="210" />
+            <vertex xr="106" yr="210" />
+            <vertex xr="106" yr="209" />
+            <vertex xr="104" yr="209" />
         </obstacle>
         <obstacle>
             <vertex xr="0" yr="210" />
-            <vertex xr="0" yr="256" />
-            <vertex xr="256" yr="256" />
-            <vertex xr="256" yr="210" />
-            <vertex xr="176" yr="210" />
-            <vertex xr="137" yr="210" />
-            <vertex xr="137" yr="211" />
-            <vertex xr="135" yr="211" />
-            <vertex xr="135" yr="212" />
-            <vertex xr="133" yr="212" />
-            <vertex xr="133" yr="214" />
-            <vertex xr="132" yr="214" />
-            <vertex xr="132" yr="254" />
-            <vertex xr="106" yr="254" />
-            <vertex xr="106" yr="215" />
-            <vertex xr="105" yr="215" />
-            <vertex xr="105" yr="213" />
-            <vertex xr="104" yr="213" />
-            <vertex xr="104" yr="212" />
-            <vertex xr="103" yr="212" />
-            <vertex xr="103" yr="211" />
-            <vertex xr="101" yr="211" />
+            <vertex xr="65" yr="210" />
             <vertex xr="101" yr="210" />
-            <vertex xr="65" yr="210" />
-        </obstacle>
-        <obstacle>
-            <vertex xr="0" yr="210" />
-            <vertex xr="65" yr="210" />
-            <vertex xr="65" yr="207" />
-            <vertex xr="97" yr="207" />
-            <vertex xr="97" yr="187" />
-            <vertex xr="64" yr="187" />
-            <vertex xr="64" yr="184" />
-            <vertex xr="103" yr="184" />
-            <vertex xr="103" yr="182" />
-            <vertex xr="104" yr="182" />
-            <vertex xr="104" yr="181" />
-            <vertex xr="105" yr="181" />
-            <vertex xr="105" yr="179" />
-            <vertex xr="106" yr="179" />
-            <vertex xr="106" yr="140" />
-            <vertex xr="132" yr="140" />
-            <vertex xr="132" yr="181" />
-            <vertex xr="133" yr="181" />
-            <vertex xr="133" yr="182" />
-            <vertex xr="134" yr="182" />
-            <vertex xr="134" yr="183" />
-            <vertex xr="135" yr="183" />
-            <vertex xr="135" yr="184" />
-            <vertex xr="176" yr="184" />
+            <vertex xr="101" yr="211" />
+            <vertex xr="103" yr="211" />
+            <vertex xr="103" yr="212" />
+            <vertex xr="105" yr="213" />
+            <vertex xr="104" yr="212" />
+            <vertex xr="104" yr="213" />
+            <vertex xr="105" yr="215" />
+            <vertex xr="106" yr="215" />
+            <vertex xr="106" yr="254" />
+            <vertex xr="132" yr="254" />
+            <vertex xr="132" yr="214" />
+            <vertex xr="133" yr="214" />
+            <vertex xr="133" yr="212" />
+            <vertex xr="135" yr="212" />
+            <vertex xr="135" yr="211" />
+            <vertex xr="137" yr="211" />
+            <vertex xr="137" yr="210" />
             <vertex xr="176" yr="210" />
             <vertex xr="256" yr="210" />
-            <vertex xr="256" yr="0" />
+            <vertex xr="256" yr="256" />
+            <vertex xr="0" yr="256" />
+        </obstacle>
+        <obstacle>
             <vertex xr="0" yr="0" />
+            <vertex xr="256" yr="0" />
+            <vertex xr="256" yr="210" />
+            <vertex xr="176" yr="210" />
+            <vertex xr="176" yr="184" />
+            <vertex xr="135" yr="184" />
+            <vertex xr="135" yr="183" />
+            <vertex xr="134" yr="183" />
+            <vertex xr="133" yr="181" />
+            <vertex xr="134" yr="182" />
+            <vertex xr="133" yr="181" />
+            <vertex xr="132" yr="181" />
+            <vertex xr="132" yr="140" />
+            <vertex xr="106" yr="140" />
+            <vertex xr="106" yr="179" />
+            <vertex xr="105" yr="179" />
+            <vertex xr="105" yr="181" />
+            <vertex xr="104" yr="181" />
+            <vertex xr="104" yr="182" />
+            <vertex xr="103" yr="182" />
+            <vertex xr="103" yr="184" />
+            <vertex xr="64" yr="184" />
+            <vertex xr="64" yr="187" />
+            <vertex xr="97" yr="187" />
+            <vertex xr="97" yr="207" />
+            <vertex xr="65" yr="207" />
+            <vertex xr="65" yr="210" />
+            <vertex xr="0" yr="210" />
         </obstacle>
         
     </obstacles>
