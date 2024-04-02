@@ -265,8 +265,8 @@ class InterSection(PGBlock):
         """
 
         crosswalk_width = lane.width * 3
-        start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.2
-        side_lat = start_lat + crosswalk_width - 0.2
+        start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.7
+        side_lat = start_lat + crosswalk_width - 0.7
 
 
         build_at_start = True
