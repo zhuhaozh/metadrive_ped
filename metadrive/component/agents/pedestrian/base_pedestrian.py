@@ -510,6 +510,15 @@ class BasePedestrian(BaseObject, BasePedestrianState):
     def WIDTH(self):
         raise NotImplementedError()
     
+    @property
+    def ACTOR_PATH(self):
+        raise NotImplementedError()
+
+    @property
+    def MOTION_PATH(self):
+        raise NotImplementedError()
+
+
     def _create_pedestrian_character(self):
         bullet_shape = BulletCylinderShape(self.RADIUS, self.HEIGHT)
 
@@ -527,27 +536,18 @@ class BasePedestrian(BaseObject, BasePedestrianState):
     
     def _add_visualization(self):
         if self.render:
-            rand_texture = AssetPaths.Pedestrian.get_random_texture()
-
-            self.actor = Actor(rand_texture['path'])
-            self.cur_state = random.choice(self.STATES)
-
-            self.actor.loadAnims(
-                {'walk': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['walk']})
-            self.actor.loadAnims(
-                {'run': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['run']})
-            self.actor.loadAnims(
-                {'idle': AssetPaths.Pedestrian.PEDESTRIAN_MOTIONS['idle']})
-            self.actor.loop(self.cur_state, fromFrame=10, toFrame=50)
+            self.actor = Actor(self.ACTOR_PATH)
             
-            self.actor.setHpr(self.actor.getH() - 90, # recitfy wrong directions in animations
-                              self.actor.getP() + 0, self.actor.getR() + 0)
-
-            # self.actor.setHpr(self.actor.getH() + 180,
-            #                 self.actor.getP() + 0, self.actor.getR() + 0)
-
+            
+            rotation = 180 if 'rotation' not in self.MOTION_PATH else self.MOTION_PATH.pop('rotation')
+            loop_start = 0 if 'loop_start' not in self.MOTION_PATH else self.MOTION_PATH.pop('loop_start')
+            
+            self.cur_state = random.choice(self.STATES)
+            self.actor.loadAnims(self.MOTION_PATH)
+            self.actor.loop(self.cur_state, fromFrame=loop_start)
+            
+            self.actor.setHpr(self.actor.getH() + rotation, self.actor.getP() + 0, self.actor.getR() + 0)
             self.actor.setPos(0, 0, -self.HEIGHT / 2)
-
             
             self._instance = self.actor.instanceTo(self.origin)
             self.show_coordinates()

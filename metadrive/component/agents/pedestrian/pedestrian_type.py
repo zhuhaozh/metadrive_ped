@@ -1,23 +1,20 @@
 
 from metadrive.component.agents.pedestrian.base_pedestrian import BasePedestrian
 from metadrive.component.pg_space import ParameterSpace, VehicleParameterSpace
+from metadrive.constants import AssetPaths
+from metadrive.utils.config import Config
 
 
 class SimplePedestrian(BasePedestrian):
     PARAMETER_SPACE = ParameterSpace(VehicleParameterSpace.M_VEHICLE)
-    # LENGTH = 1.
-    # WIDTH = 1.85
-    # HEIGHT = 1.37
+    
     RADIUS = 0.35
-
-    # REAR_WHEELBASE = 1.203
-    # FRONT_WHEELBASE = 1.285
-    # LATERAL_TIRE_TO_CENTER = 0.803
-    # TIRE_WIDTH = 0.3
     MASS = 80
-    # LIGHT_POSITION = (-0.67, 1.86, 0.22)
 
-    # path = ['130/vehicle.gltf', (1, 1, 1), (0, -0.05, 0.1), (0, 0, 0)]
+    # def __init__(self, vehicle_config: dict | Config = None, name: str = None, random_seed=None, position=None, heading=None, _calling_reset=True):
+    #     super().__init__(vehicle_config, name, random_seed, position, heading, _calling_reset)
+
+    #     self.random_actor = AssetPaths.Pedestrian.get_random_actor()
 
     @property
     def LENGTH(self):
@@ -25,8 +22,23 @@ class SimplePedestrian(BasePedestrian):
 
     @property
     def HEIGHT(self):
-        return 1.37  # meters
+        if not hasattr(self, 'random_actor'):
+            self.random_actor = AssetPaths.Pedestrian.get_random_actor()
+        return self.random_actor['height']
+
 
     @property
     def WIDTH(self):
         return 1.  # meters
+    
+    @property
+    def ACTOR_PATH(self):
+        if not hasattr(self, 'random_actor'):
+            self.random_actor = AssetPaths.Pedestrian.get_random_actor()
+        return self.random_actor['actor_path']
+    
+    @property
+    def MOTION_PATH(self):
+        if not hasattr(self, 'random_actor'):
+            self.random_actor = AssetPaths.Pedestrian.get_random_actor()
+        return self.random_actor['motion_path']
