@@ -76,7 +76,6 @@ def mask_to_2d_list(mask, extend=False, upsample=1):
     binary_list = np.array(binary_list)
     return binary_list, h, w
 
-
 def prettify(elem):
     rough_str = ET.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_str)
@@ -162,7 +161,7 @@ def write_to_xml(grid, width, height, cellsize, flipped_contours, agentdict, fil
         f.write(prettify(root))
         # tree.write(f, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
-
+    
 class OrcaPlanning:
     def __init__(self, template_xml_file=None, map_mask=None):
         # self.template_xml_file = template_xml_file
@@ -276,6 +275,17 @@ class OrcaPlanning:
         return start_lists, goal_lists, points_lists
 
     def get_planning(self, start_positions, goals):
+
+        def get_speed(positions):
+            pos1 = positions[:-1]
+            pos2 = positions[1:]
+
+            pos_delta = pos2 - pos1
+            speed = np.linalg.norm(pos_delta, axis=2)
+            speed = np.concatenate([np.zeros((1, len(start_positions))), speed], axis=0)
+            return list(speed)
+
+
         self.set_agents(start_positions, goals)
         # xmlp = "/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/orca_algo/task_examples_demo/custom_road.xml"
         # result = bind.demo(xmlp, self.num_agent)
@@ -294,7 +304,7 @@ class OrcaPlanning:
 
         nexts = np.stack(nexts, axis=1)
         self.next_positions = list(nexts)
-
+        self.speed = get_speed(nexts)
         return nexts
 
     def has_next(self):
@@ -303,11 +313,14 @@ class OrcaPlanning:
         else:
             return False
         
-    def get_next(self):
+    def get_next(self, return_speed=False):
         if not self.has_next():
             return None
-        # print(len(self.next_positions))
-        return self.next_positions.pop(0)
+
+        if not return_speed:
+            return self.next_positions.pop(0)
+        else:
+            return self.next_positions.pop(0), self.speed.pop(0)
 
     @property
     def length(self):

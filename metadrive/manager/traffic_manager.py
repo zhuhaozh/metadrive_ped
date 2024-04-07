@@ -451,10 +451,8 @@ class HumanoidManager(BaseManager):
         map = self.current_map
         # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
         self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
-        # self.walkable_mask = cv2.imread("tmp/map_mask.png")
-        # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
-        self.num_humanoid_agent = 25
+        self.num_humanoid_agent = 20
         self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
         self.planning.generate_template_xml(self.walkable_mask)
 
@@ -718,9 +716,9 @@ class HumanoidManager(BaseManager):
         return SimplePedestrian
 
     def step_action(self):
-        def apply_actions(objs, dest_pos):
+        def apply_actions(objs, dest_pos, speed):
             # print("------------------------------------------")
-            for objname, pos in zip(objs, dest_pos):
+            for objname, pos, speed in zip(objs, dest_pos, speed):
                 obj = list(self.engine.get_object(objname).values())[0]
                 pos = pos[0] + self.walkable_offset_x, pos[1] + self.walkable_offset_y
 
@@ -728,8 +726,12 @@ class HumanoidManager(BaseManager):
                 heading = get_dest_heading(obj, pos)
                 # print(heading)
                 # obj.set_heading(heading)
-                obj.set_position(pos)
+                speed = speed / self.engine.global_config["physics_world_step_size"]
+                obj.set_anim_by_speed(speed)
 
+
+
+                obj.set_position(pos)
                 obj._body.setAngularMovement(heading)
                 # obj.set_roll(heading)
                 # print(heading)
@@ -742,10 +744,11 @@ class HumanoidManager(BaseManager):
             self.starts = self.goals
             _, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
             self.planning.get_planning(self.starts, self.goals)
-        # print(self.planning.length)
-        dest_pos = self.planning.get_next()
+
+        # dest_pos = self.planning.get_next()
+        dest_pos, speed = self.planning.get_next(return_speed=True)
         
-        apply_actions(objs, dest_pos)
+        apply_actions(objs, dest_pos, speed)
 
     def random_vehicle_type(self):
         from metadrive.component.vehicle.vehicle_type import random_vehicle_type

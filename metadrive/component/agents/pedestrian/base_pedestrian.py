@@ -135,7 +135,7 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         self.navigation: Optional[NodeNetworkNavigation] = None
 
         # state info
-        self.speed = 1 # env required, not used
+        # self.speed = 1 # env required, not used
         self.throttle_brake = 0.0
         self.steering = 0
         self.last_current_action = deque([(0.0, 0.0), (0.0, 0.0)], maxlen=2)
@@ -236,6 +236,7 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         :return: None
         """
         distance = norm(self.last_position[0] - self.position[0], self.last_position[1] - self.position[1]) / 1000  # km
+        # print("distance", distance / self.engine.global_config["physics_world_step_size"] * 1000)
         step_energy = 3.25 * math.pow(np.e, 0.01 * self.speed_km_h) * distance / 100
         # step_energy is in Liter, we return mL
         step_energy = step_energy * 1000
@@ -430,25 +431,28 @@ class BasePedestrian(BaseObject, BasePedestrianState):
     def speed_km_h(self):
         return self.speed * 3.6
 
-    # @property
-    # def speed(self):
-    #     try:
-    #         # self.last_time = self.cur_time
-    #         self.cur_time = time.time()
-    #         print(time.time() - self.last_time)
-    #         self.last_time = self.cur_time
-    #     except:
-    #         self.last_time = time.time()
-    #         pass
-    #     self.last_speed = self.cur_speed
+    @property
+    def speed(self):
+        distance = norm(self.last_position[0] - self.position[0], self.last_position[1] - self.position[1]) / 1000  # km
+        speed = distance / self.engine.global_config["physics_world_step_size"] * 1000
+        # print("distance", distance / self.engine.global_config["physics_world_step_size"] * 1000)
+        # try:
+        #     # self.last_time = self.cur_time
+        #     self.cur_time = time.time()
+        #     print(time.time() - self.last_time)
+        #     self.last_time = self.cur_time
+        # except:
+        #     self.last_time = time.time()
+        #     pass
+        # self.last_speed = self.cur_speed
 
-    #     p1 = self.last_position
-    #     p2 = self.position
-    #     distance = math.sqrt(((p1[0]-p2[0])*(p1[0]-p2[0]))+((p1[1]-p2[1])*(p1[1]-p2[1])))
-    #     speed = distance / get_engine().global_config["physics_world_step_size"]
+        # p1 = self.last_position
+        # p2 = self.position
+        # distance = math.sqrt(((p1[0]-p2[0])*(p1[0]-p2[0]))+((p1[1]-p2[1])*(p1[1]-p2[1])))
+        # speed = distance / get_engine().global_config["physics_world_step_size"]
 
-    #     self.cur_speed = speed  # Scalar
-    #     return speed
+        # self.cur_speed = speed  # Scalar
+        return speed
     
     @property
     def chassis_velocity_direction(self):
@@ -534,17 +538,35 @@ class BasePedestrian(BaseObject, BasePedestrianState):
 
         return character
     
+    def set_anim_by_rorations(self, rotations):
+        for rotation in rotations:
+            pass
+
+    def set_anim_by_speed(self, speed):
+        # docs: https://docs.panda3d.org/1.10/python/programming/models-and-actors/actor-animations 
+        # assert state in self.STATES
+        if speed > 3:
+            state = 'run'
+        elif speed < 0.1:
+            state = 'idle'
+        else:
+            state = 'walk'    
+
+        if self.cur_state != state:
+            self.actor.loop(state, fromFrame=self.loop_start)
+            self.cur_state = state
+
     def _add_visualization(self):
         if self.render:
             self.actor = Actor(self.ACTOR_PATH)
             
             motion_path = deepcopy(self.MOTION_PATH)
             rotation = 180 if 'rotation' not in motion_path else motion_path.pop('rotation')
-            loop_start = 0 if 'loop_start' not in motion_path else motion_path.pop('loop_start')
+            self.loop_start = 0 if 'loop_start' not in motion_path else motion_path.pop('loop_start')
             
             self.cur_state = random.choice(self.STATES)
             self.actor.loadAnims(motion_path)
-            self.actor.loop(self.cur_state, fromFrame=loop_start)
+            self.actor.loop(self.cur_state, fromFrame=self.loop_start)
             
             self.actor.setHpr(self.actor.getH() + rotation, self.actor.getP() + 0, self.actor.getR() + 0)
             self.actor.setPos(0, 0, -self.HEIGHT / 2)
