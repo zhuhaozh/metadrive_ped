@@ -332,109 +332,8 @@ class PGBlock(BaseBlock):
             "height": sidewalk_height
         }
 
-
-    def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
-        """
-        Construct the sidewalk for this lane
-        Args:
-            block:
-
-        Returns:
-        """
-
-        """
-        build_at_start = True
-        build_at_end = True
-        if ">" in str(lane.index):
-            return
-
-        set1 = set(self.block_network.graph.keys())
-        try:
-            set2 = set(self.block_network.graph['>>>'].keys())
-        except Exception:
-            set2 = set()
-        lane_names = list(filter(lambda x: not x.startswith("-"), list(set1 - set2)))
-        lane_name = "#".join([str(x) for x in lane.index])
-        for name in lane_names:
-            if name in lane_name:
-                if lane_name.startswith("-"):
-                    build_at_start = False
-                else:
-                    build_at_end = False
-
-        if str(lane.index) in self.sidewalks: # self.crosswalks:
-            logger.warning("Crosswalk id {} already exists!".format(str(lane.index)))
-            return
-        start_lat = +lane.width_at(0) - PGDrivableAreaProperty.SIDEWALK_WIDTH * 3 #  / 2 + 0.2
-        side_lat = start_lat + PGDrivableAreaProperty.SIDEWALK_WIDTH * 5
-
-        if build_at_end:
-            longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
-            key = "CRS_" + str(lane.index)
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
-        
-        if build_at_start:
-            longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
-            key = "CRS_" + str(lane.index) + "_S"
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
-        """
-        # # Straight	        S
-        # # Circular	        C
-        # # InRamp	        r	
-        # # OutRamp	        R
-        # # Roundabout	    O	
-        # # Intersection	    X
-        # # Merge	            y	
-        # # Split	            Y
-        # # Tollgate	        $	
-        # # Parking lot	    P.x
-        # # TInterection	    T	
-        # # Fork	            WIP
-        # # block_ids = ["S","C","r","R","O","X","y","Y","$","P", "T"]
-
-        # def filter_block_id(lane_index):
-        #     block_ids = ["r", "R"]
-        #     x0 = re.findall("[a-zA-Z]", lane_index[0])
-        #     if len(x0) > 1 or (len(x0) == 1 and x0[0] in block_ids):
-        #         return None
-                
-        #     x1 = re.findall("[a-zA-Z]", lane_index[1])
-        #     if len(x1) > 1 or (len(x1) == 1 and x1[0] in block_ids):
-        #         return None
-
-        #     x00 = x0[0] if len(x0) == 1 else "#"
-        #     x10 = x1[0] if len(x1) == 1 else "#"
-
-        #     print("-----" * 10, lane_index)
-        #     return True, x00, x10
-        
-        # block_flag, x0, x1 = filter_block_id(lane.index) 
-        # if not block_flag:
-        #     return
-
-        # build_at_start = True
-        # build_at_end = True
-
-        # start_lat = +lane.width_at(0)  - PGDrivableAreaProperty.CROSSWALK_WIDTH # * 2.9#  / 2 + 0.2
-        # side_lat = start_lat + PGDrivableAreaProperty.CROSSWALK_WIDTH #  * 4.95
-
-        # if x0 == "O" or x1 == "O":
-        #     side_lat = start_lat + PGDrivableAreaProperty.CROSSWALK_WIDTH #  * 4.95
-    
-        # if build_at_end:
-        #     longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
-        #     key = "CRS_" + str(lane.index)
-        #     self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
-            
-        # if build_at_start:
-        #     longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
-        #     key = "CRS_" + str(lane.index) + "_S"
-        #     self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
-
-
     def build_crosswalk_block(self, key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat):
         polygon = []
-
         assert lateral_direction == -1 or lateral_direction == 1
 
         start_lat *= lateral_direction
@@ -444,13 +343,13 @@ class PGBlock(BaseBlock):
             if k == 1:
                 longs = longs[::-1]
             for longitude in longs:
-                # print(k, lateral, longitude)
+                # print(k, lateral, longitude) # k always 0 or 1
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
         
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
-            "type": MetaDriveType.BOUNDARY_SIDEWALK,
+            "type": MetaDriveType.CROSSWALK, #BOUNDARY_SIDEWALK,
             "polygon": polygon,
             "height": sidewalk_height
         }
@@ -466,10 +365,10 @@ class PGBlock(BaseBlock):
             lateral = idx * lane.width_at(0) / 2
             if line_type == PGLineType.CONTINUOUS:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
-                # self._generate_sidewalk_from_line(lane)
             elif line_type == PGLineType.BROKEN:
+                self._generate_crosswalk_from_line(lane) 
                 self._construct_broken_line(lane, lateral, line_color, line_type)
-                self._generate_crosswalk_from_line(lane)
+                # if 'O' in lane.index...?
             elif line_type == PGLineType.SIDE:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
                 self._generate_sidewalk_from_line(lane)

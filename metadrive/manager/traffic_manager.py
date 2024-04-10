@@ -452,7 +452,7 @@ class HumanoidManager(BaseManager):
         # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
         self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
-        self.num_humanoid_agent = 20
+        self.num_humanoid_agent = 1 #20
         self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
         self.planning.generate_template_xml(self.walkable_mask)
 
@@ -648,8 +648,12 @@ class HumanoidManager(BaseManager):
         
         line_sample_interval = 1
         all_lanes = map.get_map_features(line_sample_interval)
+        # print(all_lanes.keys())  #"CRS_('1X0_0_', '1X0_1_', 0)": {'type': 'ROAD_EDGE_SIDEWALK', 'polygon': [[69.45, -42.0], [69.45, -45.0], [69.45, -48.0], [59.65, -48.0], [59.65, -45.0], [59.65, -42.0]], 'height': None},
         crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
         sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
+
+        # print('traffic_manager, crosswalk & sidewalk keys: \,', crosswalk_keys[0].keys(), '\n', sidewalk_keys[0].keys())
+        # assert False
         all_pts = []
 
         for key in crosswalk_keys:

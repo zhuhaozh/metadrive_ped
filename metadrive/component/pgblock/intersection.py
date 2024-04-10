@@ -263,12 +263,12 @@ class InterSection(PGBlock):
 
         Returns:
         """
-
         crosswalk_width = lane.width * 3
         start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.7
         side_lat = start_lat + crosswalk_width - 0.7
 
-
+        print('lane inside intersection: ')
+        print(lane.index)  #('4X0_0_', '4X0_1_', 0)
         build_at_start = True
         build_at_end = True
         if build_at_end:

@@ -117,6 +117,8 @@ class MetaDriveEnv(BaseEnv):
         config["map_config"] = parse_map_config(
             easy_map_config=config["map"], new_map_config=config["map_config"], default_config=self.default_config_copy
         )
+        print(config["map_config"] )  #{'type': 'block_sequence', 'config': 'XSO', 'lane_width': 3.5, 'lane_num': 3, 'exit_length': 50}
+        # assert False
         config["vehicle_config"]["norm_pixel"] = config["norm_pixel"]
         config["vehicle_config"]["random_agent_model"] = config["random_agent_model"]
         target_v_config = copy.deepcopy(config["vehicle_config"])
@@ -289,7 +291,6 @@ class MetaDriveEnv(BaseEnv):
         # self.engine.register_manager("traffic_manager", PGTrafficManager())
         if abs(self.config["accident_prob"] - 0) > 1e-2:
             self.engine.register_manager("object_manager", TrafficObjectManager())
-
 
 if __name__ == '__main__':
 
