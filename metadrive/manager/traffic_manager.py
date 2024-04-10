@@ -729,14 +729,15 @@ class HumanoidManager(BaseManager):
                 speed = speed / self.engine.global_config["physics_world_step_size"]
                 obj.set_anim_by_speed(speed)
 
-
-
                 obj.set_position(pos)
                 obj._body.setAngularMovement(heading)
                 # obj.set_roll(heading)
                 # print(heading)
                 # obj._body.setLinearMovement(LPoint3f(0 , 1, 0) * 3, True)
             # print("------------------------------------------")
+
+        if not hasattr(self, 'humanoid_on_block'):
+            return
 
         objs = self.get_objects(self.humanoid_on_block)
 
