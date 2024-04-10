@@ -127,10 +127,20 @@ class FirstPGBlock(PGBlock):
         start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.7
         side_lat = start_lat + crosswalk_width - 0.7
 
-        print('first block lane index: ' ,  lane.index) # ('>', '>>', 0)
-        # if '->>>' != lane.index[0]: 
-        build_at_start = True 
-        build_at_end = True
+        # print('first block lane index: ' ,  lane.index) # ('>', '>>', 0)
+        if (('>', '>>', 1) == lane.index or ('>', '>>', 0) == lane.index):
+            build_at_start = True 
+            build_at_end = False
+        elif (('->>', '->', 1) == lane.index or ('->>', '->', 0) == lane.index): 
+            build_at_start = False
+            build_at_end = True
+        elif (('>>', '>>>', 1) == lane.index or ('>>', '>>>', 0) == lane.index):
+            build_at_start = False 
+            build_at_end = True
+        elif (('->>>', '->>', 1) == lane.index or ('->>>', '->>', 0) == lane.index):
+            build_at_start = True 
+            build_at_end = False
+
         if build_at_end:  ### ??? 
             longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index)

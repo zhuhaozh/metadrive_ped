@@ -343,10 +343,8 @@ class PGBlock(BaseBlock):
             if k == 1:
                 longs = longs[::-1]
             for longitude in longs:
-                # print(k, lateral, longitude) # k always 0 or 1
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
-        
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
             "type": MetaDriveType.CROSSWALK, #BOUNDARY_SIDEWALK,
@@ -368,7 +366,6 @@ class PGBlock(BaseBlock):
             elif line_type == PGLineType.BROKEN:
                 self._generate_crosswalk_from_line(lane) 
                 self._construct_broken_line(lane, lateral, line_color, line_type)
-                # if 'O' in lane.index...?
             elif line_type == PGLineType.SIDE:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
                 self._generate_sidewalk_from_line(lane)

@@ -1,5 +1,9 @@
+### TODO1
+
 import cv2, math
 import numpy as np
+
+#COXSTC
 # sidewalks = {}
 # crosswalks = {}
 

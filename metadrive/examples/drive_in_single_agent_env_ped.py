@@ -24,8 +24,8 @@ InRamp	        r   #
 OutRamp	        R   #
 Roundabout	    O	#
 Intersection	X
-Merge	        y	#
-Split	        Y   #
+Merge	        y	
+Split	        Y   
 Tollgate	    $	
 Parking lot	    P.x
 TInterection	T	
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # config = dict(map="SrTRSX",
     # config = dict(map="rR",
     # config = dict(map="XSTCOX",
-    config = dict(map="O",
+    config = dict(map="C", #"COXSTC",
     # config = dict(map="XSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCS",
     # config = dict(map="XSCSOTSCCC",
     # config = dict(map="XSCSOTSCCCCCCSSTOC",
