@@ -246,7 +246,7 @@ class PGBlock(BaseBlock):
     def block_network_type(self):
         return NodeRoadNetwork
 
-    def create_in_world(self): # panda3d
+    def create_in_world(self): # panda3d # called everytime when construct a new block
         graph = self.block_network.graph
         for _from, to_dict in graph.items():
             for _to, lanes in to_dict.items():
@@ -345,27 +345,31 @@ class PGBlock(BaseBlock):
             for longitude in longs:
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
+        # print(f'{key}={polygon}')
+
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
             "type": MetaDriveType.CROSSWALK, #BOUNDARY_SIDEWALK,
             "polygon": polygon,
             "height": sidewalk_height
         }
-
+      
 
     def _construct_lane_line_in_block(self, lane, construct_left_right=(True, True)):
         """
         Construct lane line in the Panda3d world for getting contact information
         """
         for idx, line_type, line_color, need, in zip([-1, 1], lane.line_types, lane.line_colors, construct_left_right):
+            ### lane.index = ('>>>', '1C0_0_', 1)
             if not need:
                 continue
             lateral = idx * lane.width_at(0) / 2
             if line_type == PGLineType.CONTINUOUS:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
             elif line_type == PGLineType.BROKEN:
-                self._generate_crosswalk_from_line(lane) 
                 self._construct_broken_line(lane, lateral, line_color, line_type)
+                self._generate_crosswalk_from_line(lane) 
+                # print(self.crosswalks.keys())
             elif line_type == PGLineType.SIDE:
                 self._construct_continuous_line(lane, lateral, line_color, line_type)
                 self._generate_sidewalk_from_line(lane)
@@ -382,3 +386,4 @@ class PGBlock(BaseBlock):
                     "You have to modify this function and implement a constructing method for line type: {}".
                     format(line_type)
                 )
+        # print(f'finished loop of {lane.index}, with {line_type}')

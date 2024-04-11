@@ -6,6 +6,7 @@ from metadrive.component.pgblock.pg_block import PGBlock
 from metadrive.component.road_network import Road
 from metadrive.constants import PGLineType
 from metadrive.constants import PGDrivableAreaProperty
+from metadrive.constants import MetaDriveType
 
 
 class Curve(PGBlock):
@@ -90,15 +91,50 @@ class Curve(PGBlock):
         self.add_sockets(self.create_socket_from_positive_road(positive_road))
         return no_cross
 
+    def _build_crosswalk_block(self, key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, label):
+        polygon = []
+        assert lateral_direction == -1 or lateral_direction == 1
+
+        start_lat *= lateral_direction
+        side_lat *= lateral_direction
+
+        for k, lateral in enumerate([start_lat, side_lat]):
+            if k == 1:
+                longs = longs[::-1]
+            for longitude in longs:
+                point = lane.position(longitude, lateral)
+                polygon.append([point[0], point[1]])
+        # print(f'{key}={polygon}')
+
+        self.crosswalks[key] = {
+        # self.sidewalks[str(lane.index)] = {
+            "type": MetaDriveType.CROSSWALK, #BOUNDARY_SIDEWALK,
+            "polygon": polygon,
+            "height": sidewalk_height,
+            "label": label
+        }
+
+        ### TODO: end of previous block may conflict a little bit with curve start
+        if len(self.crosswalks.keys()) >= 16: # and self.class_name=='Curve':
+            from scipy.spatial import ConvexHull
+            process_values = ['straight_end','curve_start', 'curve_end']
+            for process_value in process_values:
+                curve_start_keys = [k for k,subdict in self.crosswalks.items() if any(subvalue == process_value for subvalue in subdict.values())]
+                tmptotal = []
+                for curve_start_key in curve_start_keys:
+                    tmptotal.append(np.array(self.crosswalks[curve_start_key]['polygon']))
+                pts = np.concatenate(tmptotal)
+                
+                hull = ConvexHull(pts)
+                hull_vertices = pts[hull.vertices].tolist()
+                for i, curve_start_key in enumerate(curve_start_keys):
+                    if i == 0:
+                        self.crosswalks[curve_start_key]['polygon'] = hull_vertices
+                    else:
+                        del self.crosswalks[curve_start_key]
+
     def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
         ### TODO1: polygon
-        """
-        Construct the sidewalk for this lane
-        Args:
-            block:
-
-        Returns:
-        """
         crosswalk_width = lane.width * 3
         start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.7
         side_lat = start_lat + crosswalk_width - 0.7
@@ -115,9 +151,30 @@ class Curve(PGBlock):
         if build_at_end:
             longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index)
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
-            
+            if f'-{self.name}0_0_' == lane.index[0]: label = 'curve_start'
+            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: label = 'straight_end'
+            elif f'{self.name}0_0_' == lane.index[1]: label = 'curve_end' # 1
+            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: label = 'curve_end' #3
+            else: 
+                print('----- curve label unknown: ', lane.index)
+                label = 'todo'
+                assert False
+            self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, label)
+
         if build_at_start:
             longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index) + "_S"
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            if f'{self.name}0_0_' == lane.index[1]: label = 'curve_start'
+            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: label = 'straight_end'
+            elif f'-{self.name}0_0_' == lane.index[0]: label = 'curve_end'  #2
+            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: label = 'curve_end' #2
+            else: 
+                print('----- curve label unknown: ', lane.index); label = 'todo'
+                assert False
+            self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, label)
+
+# curve start : CRS_('>>>', '1C0_0_', 0)_S,CRS_('>>>', '1C0_0_', 1)_S,CRS_('-1C0_0_', '->>>', 0), CRS_('-1C0_0_', '->>>', 1)
+# straight end: CRS_('1C0_0_', '1C0_1_', 0), CRS_('1C0_0_', '1C0_1_', 1), CRS_('-1C0_1_', '-1C0_0_', 0)_S, CRS_('-1C0_1_', '-1C0_0_', 1)_S
+# curve end: 1. (, 1C0_0_, 0), (, 1C0_0_, 1)
+            #2. (-1C0_0_, , 0)_S, (-1C0_0_, ,1)_S, (1C0_0_, 1C0_1_, 0)_S, (1C0_0_, 1C0_1_, 1)_S, 
+            # 3. (-1C0_1_, -1C0_0_,0), (-1C0_1_,-1C0_0_,1)

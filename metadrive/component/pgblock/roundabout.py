@@ -238,7 +238,7 @@ class Roundabout(PGBlock):
         # print(lane.polygon)
         # print(lane.start_lat)
         # assert False
-        print('roudabout lane index: ' ,  lane.index) # ('1O0_0_', '1O0_1_', 0)
+        # print('roudabout lane index: ' ,  lane.index) # ('1O0_0_', '1O0_1_', 0)
 
         if '_3_' in lane.index[1] or '_3_' in lane.index[0]:
             crosswalk_width = lane.width * 3  ## length

@@ -121,6 +121,7 @@ class BaseBlock(BaseObject, PGDrivableAreaProperty, ABC):
         success = self._sample_topology()
         self._global_network.add(self.block_network, no_same_node)
 
+        print('inside base_block, construct block')
         self._create_in_world()
         self.attach_to_world(root_render_np, physics_world)
 
