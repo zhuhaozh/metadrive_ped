@@ -599,8 +599,8 @@ class PedestrianAssetPaths:
 
         'walk': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
         'run': PEDESTRIAN_ROOT + 'motions_yup/jog.gltf',
-        'idle': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
-
+        'idle': PEDESTRIAN_ROOT + 'motions_yup/idle.gltf',
+        # "test": "/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/tmp/walk60.egg",
         'loop_start': 10
         # 'walk': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
         # 'run': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
@@ -628,11 +628,36 @@ class PedestrianAssetPaths:
                    'run': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
                    'idle': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf'},
                'height': 1.29714}, # render people
+
+
+        "r3": {'actor_path': PEDESTRIAN_ROOT + "RPtest_GLTF/rp_amit_rigged_009_yup_t_model.gltf", 
+               'motion_path': {
+                   'walk': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
+                   'run': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
+                   'idle': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf'},
+               'height': 1.29714}, # render people
+               
+    #     "r4": {'actor_path': PEDESTRIAN_ROOT + "RPtest_GLTF/rp_amit_rigged_011_yup_t_model.gltf", 
+    #            'motion_path': {
+    #                'walk': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
+    #                'run': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
+    #                'idle': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf'},
+    #            'height': 1.29714}, # render people
+
+    #     "r2": {
+    #         'actor_path': PEDESTRIAN_ROOT + "ellie/Tpose/rp_ellie_rigged_004.gltf", 
+    #            'motion_path': {
+    #                'walk': PEDESTRIAN_ROOT + 'ellie/motions/ellie_SlowRun.gltf',
+    #                'run': PEDESTRIAN_ROOT + 'ellie/motions/ellie_SlowRun.gltf',
+    #                'idle': PEDESTRIAN_ROOT + 'ellie/motions/ellie_SlowRun.gltf'
+    #                },
+    #            'height': 1.29714}, # render people
     }
 
     @staticmethod
     def get_random_actor():
-        return random.choice(list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values()))
+        return list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values())[1]
+        # return random.choice(list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values()))
 
 class AssetPaths:
     Pedestrian=PedestrianAssetPaths
