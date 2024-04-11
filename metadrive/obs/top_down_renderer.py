@@ -1,4 +1,5 @@
 import copy
+from metadrive.engine.logger import get_logger
 
 from metadrive.utils import generate_gif
 import math
@@ -15,8 +16,6 @@ from metadrive.scenario.scenario_description import ScenarioDescription
 from metadrive.utils.utils import import_pygame
 from metadrive.utils.utils import is_map_related_instance
 
-import cv2
-import numpy as np
 pygame, gfxdraw = import_pygame()
 
 color_white = (255, 255, 255)
@@ -44,6 +43,11 @@ def draw_top_down_map_native(
 
     """
     surface = WorldSurface(film_size, 0, pygame.Surface(film_size))
+    if map is None:
+        surface.move_display_window_to([0, 0])
+        surface.fill([230, 230, 230])
+        return surface if return_surface else WorldSurface.to_cv2_image(surface)
+
     b_box = map.road_network.get_bounding_box()
     x_len = b_box[1] - b_box[0]
     y_len = b_box[3] - b_box[2]
@@ -64,9 +68,6 @@ def draw_top_down_map_native(
                     surface, TopDownSemanticColor.get_color(obj["type"]),
                     [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
                 )
-                # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
-                # pts = pts.reshape((-1,1,2))
-                # cv2.polylines(img, [pts], True, [124,124,124])
 
             elif MetaDriveType.is_road_line(obj["type"]) or MetaDriveType.is_road_boundary_line(obj["type"]):
                 if semantic_broken_line and MetaDriveType.is_broken_line(obj["type"]):
@@ -77,9 +78,6 @@ def draw_top_down_map_native(
                     if index + 1 < len(obj["polyline"]):
                         s_p = obj["polyline"][index]
                         e_p = obj["polyline"][index + 1]
-                        # s_p1 = obj["polyline"][index] + 50
-                        # e_p1 = obj["polyline"][index + 1] + 50
-                        # cv2.line(img,[int(s_p1[0]), int(s_p1[1])], [int(e_p1[0]), int(e_p1[1])],[210, 210, 210], 5)
                         pygame.draw.line(
                             surface,
                             TopDownSemanticColor.get_color(obj["type"]),
@@ -88,29 +86,6 @@ def draw_top_down_map_native(
                             # max(surface.pix(LaneGraphics.STRIPE_WIDTH),
                             surface.pix(PGDrivableAreaProperty.LANE_LINE_WIDTH) * 2
                         )
-        crosswalk_keys = list(filter(lambda x: "CRS_" in x, all_lanes.keys()))
-        sidewalk_keys = list(filter(lambda x: "SDW_" in x, all_lanes.keys()))
-
-        for key in crosswalk_keys:
-            obj = all_lanes[key]
-            pygame.draw.polygon(
-                surface, np.array([125, 0, 0]),
-                [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
-            )
-            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
-            # pts = pts.reshape((-1,1,2))
-            # cv2.fillPoly(img, [pts], [255, 255, 255])
-
-        for key in sidewalk_keys:
-            obj = all_lanes[key]
-            pygame.draw.polygon(
-                surface, np.array([0, 125, 0]),
-                [surface.pos2pix(p[0], p[1]) for p in obj["polygon"]]
-            )
-            # pts = np.array([(p[0], p[1]) for p in np.array(obj["polygon"]) + 50], np.int32)
-            # pts = pts.reshape((-1,1,2))
-            # cv2.fillPoly(img, [pts], [255, 255, 255])
-            
     else:
         if isinstance(map, ScenarioMap):
             line_sample_interval = 2
@@ -195,12 +170,13 @@ class TopDownRenderer:
         self,
         film_size=(2000, 2000),  # draw map in size = film_size/scaling. By default, it is set to 400m
         scaling=5,  # None for auto-scale
-        screen_size=(1000, 1000),
+        screen_size=(800, 800),
         num_stack=15,
         history_smooth=0,
         show_agent_name=False,
         camera_position=None,
-        target_vehicle_heading_up=False,
+        target_agent_heading_up=False,
+        target_vehicle_heading_up=None,
         draw_target_vehicle_trajectory=False,
         semantic_map=False,
         semantic_broken_line=True,
@@ -221,7 +197,7 @@ class TopDownRenderer:
 
             screen_size: The size of the window popped up. It shows a region with width and length = screen_size/scaling
 
-            num_stack: How many history steps to keep. History trajectory will show in faded color
+            num_stack: How many history steps to keep. History trajectory will show in faded color. It should be > 1
 
             history_smooth: Smoothing the trajectory by drawing less history positions. This value determines the sample
             rate. By default, this value is 0, meaning positions in previous num_stack steps will be shown.
@@ -231,8 +207,10 @@ class TopDownRenderer:
             camera_position: Set the (x,y) position of the top_down camera. If it is not specified, the camera will move
             with the ego car.
 
-            target_vehicle_heading_up: Whether to rotate the camera according to the ego car's heading. When enabled,
+            target_agent_heading_up: Whether to rotate the camera according to the ego agent's heading. When enabled,
             The ego car always faces upwards.
+
+            target_vehicle_heading_up: Deprecated, use target_agent_heading_up instead!
 
             draw_target_vehicle_trajectory: Whether to draw the ego car's whole trajectory without faded color
 
@@ -251,8 +229,18 @@ class TopDownRenderer:
         # LQY: do not delete the above line !!!!!
 
         # Setup some useful flags
+        self.logger = get_logger()
+        if num_stack < 1:
+            self.logger.warning("num_stack should be greater than 0. Current value: {}. Set to 1".format(num_stack))
+            num_stack = 1
+
+        if target_vehicle_heading_up is not None:
+            self.logger.warning("target_vehicle_heading_up is deprecated! Use target_agent_heading_up instead!")
+            assert target_agent_heading_up is False
+            target_agent_heading_up = target_vehicle_heading_up
+
         self.position = camera_position
-        self.target_vehicle_heading_up = target_vehicle_heading_up
+        self.target_agent_heading_up = target_agent_heading_up
         self.show_agent_name = show_agent_name
         self.draw_target_vehicle_trajectory = draw_target_vehicle_trajectory
         self.contour = draw_contour
@@ -271,7 +259,7 @@ class TopDownRenderer:
         self.history_target_vehicle = []
         self.history_smooth = history_smooth
         # self.current_track_agent = current_track_agent
-        if self.target_vehicle_heading_up:
+        if self.target_agent_heading_up:
             assert self.current_track_agent is not None, "Specify which vehicle to track"
         self._text_render_pos = [50, 50]
         self._font_size = 25
@@ -279,9 +267,11 @@ class TopDownRenderer:
         self.semantic_map = semantic_map
         self.scaling = scaling
         self.film_size = film_size
+        self._screen_size = screen_size
 
         # Setup the canvas
-        # (1) background is the underlying layer. It is fixed and will never change unless the map changes.
+        # (1) background is the underlying layer that draws map.
+        # It is fixed and will never change unless the map changes.
         self._background_canvas = draw_top_down_map_native(
             self.map,
             scaling=self.scaling,
@@ -290,22 +280,18 @@ class TopDownRenderer:
             film_size=self.film_size,
             semantic_broken_line=self.semantic_broken_line
         )
-        # (2) runtime is a copy of the background so you can draw movable things on it. It is super large
-        # and our vehicles can draw on this large canvas.
+
+        # (2) frame is a copy of the background so you can draw movable things on it.
+        # It is super large as the background.
         self._frame_canvas = self._background_canvas.copy()
 
-        # (3) it is only used for track vehicle
-        self.receptive_field_double = (
-            int(self._frame_canvas.pix(100 * np.sqrt(2))) * 2, int(self._frame_canvas.pix(100 * np.sqrt(2))) * 2
-        )
-        self.canvas_rotate = pygame.Surface(self.receptive_field_double)
-        # self._runtime_output = self._background_canvas.copy()  # TODO(pzh) what is this?
+        # (3) canvas_rotate is only used when target_vehicle_heading_up=True and is use to center the tracked agent.
+        if self.target_agent_heading_up:
+            max_screen_size = max(self._screen_size[0], self._screen_size[1])
+            self.canvas_rotate = pygame.Surface((max_screen_size * 2, max_screen_size * 2))
 
-        # Setup some runtime variables
-        self._screen_size = screen_size
-
-        # screen and canvas are a regional surface where only part of the super large background will draw.
-        # (3) screen is the popup window and canvas is a wrapper to screen but with more features
+        # (4) screen_canvas is a regional surface where only part of the super large background will draw.
+        # This will be used to as the final image shown in the screen & saved.
         self._screen_canvas = pygame.Surface(self._screen_size
                                              ) if self.no_window else pygame.display.set_mode(self._screen_size)
         self._screen_canvas.set_alpha(None)
@@ -524,7 +510,7 @@ class TopDownRenderer:
         v = self.current_track_agent
         canvas = self._frame_canvas
         field = self._screen_canvas.get_size()
-        if not self.target_vehicle_heading_up:
+        if not self.target_agent_heading_up:
             if self.position is not None or v is not None:
                 cam_pos = (self.position or v.position)
                 position = self._frame_canvas.pos2pix(*cam_pos)
@@ -534,14 +520,14 @@ class TopDownRenderer:
             self.screen_canvas.blit(source=canvas, dest=(0, 0), area=(off[0], off[1], field[0], field[1]))
         else:
             position = self._frame_canvas.pos2pix(*v.position)
-            self.canvas_rotate.blit(
-                canvas, (0, 0), (
-                    position[0] - self.receptive_field_double[0] / 2, position[1] - self.receptive_field_double[1] / 2,
-                    self.receptive_field_double[0], self.receptive_field_double[1]
-                )
+            area = (
+                position[0] - self.canvas_rotate.get_size()[0] / 2, position[1] - self.canvas_rotate.get_size()[1] / 2,
+                self.canvas_rotate.get_size()[0], self.canvas_rotate.get_size()[1]
             )
+            self.canvas_rotate.fill(color_white)
+            self.canvas_rotate.blit(source=canvas, dest=(0, 0), area=area)
 
-            rotation = np.rad2deg(v.heading_theta) + 90
+            rotation = -np.rad2deg(v.heading_theta) + 90
             new_canvas = pygame.transform.rotozoom(self.canvas_rotate, rotation, 1)
 
             size = self._screen_canvas.get_size()
