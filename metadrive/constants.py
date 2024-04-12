@@ -570,18 +570,34 @@ class PedestrianAssetPaths:
     }
 
     PEDESTRIAN_ACTORS = {
-        "s0": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0000403_people_baked.gltf", 
+        "s0000403": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0000403.gltf", 
                'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
                'height': 2}, # synbody
 
-        "s1": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0009203_people_baked.gltf", 
+        "s0009203": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0009203.gltf", 
                'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
                'height': 1.5}, # synbody
               
 
-        "s2": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0000001.gltf", 
+        "s0000001": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0000001.gltf", 
               'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
               'height': 1.5}, # synbody
+
+        "s0006024": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0006024.gltf", 
+              'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
+              'height': 1.5}, 
+        
+        "s0006025": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0006025.gltf", 
+              'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
+              'height': 1.5}, 
+        
+        "s0006028": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0006028.gltf", 
+              'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
+              'height': 1.5}, 
+                      
+        "s0006033": {'actor_path': PEDESTRIAN_ROOT + "characters_yup/0006033.gltf", 
+              'motion_path': SYNBODY_PEDESTRIAN_MOTIONS,
+              'height': 1.5}, 
 
 
         "r1": {'actor_path': PEDESTRIAN_ROOT + "RPtest_GLTF/rp_amit_rigged_008_yup_t_model.gltf", 
@@ -623,8 +639,8 @@ class PedestrianAssetPaths:
 
     @staticmethod
     def get_random_actor():
-        return list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values())[-1]
-        # return random.choice(list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values()))
+        # return PedestrianAssetPaths.PEDESTRIAN_ACTORS['s0006033']
+        return random.choice(list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values()))
 
 class AssetPaths:
     Pedestrian=PedestrianAssetPaths
