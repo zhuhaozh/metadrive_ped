@@ -452,7 +452,12 @@ class HumanoidManager(BaseManager):
         :return: List of Traffic vehicles
         """
         map = self.current_map
-        # self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
+
+        save_data_for_sample = {'sidewalks': map.sidewalks, 'crosswalks': map.crosswalks}
+        np.save('save_data_for_sample.npy', save_data_for_sample)
+        # assert False
+
+        ## self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
         self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
         self.num_humanoid_agent = 2 #20
