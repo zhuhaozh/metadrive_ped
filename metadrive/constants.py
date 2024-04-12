@@ -549,45 +549,6 @@ class CameraTagStateKey:
 import random, os
 class PedestrianAssetPaths:
     PEDESTRIAN_ROOT = os.path.abspath("./metadrive/assets_pedestrian/") + "/"
-    """
-    # PEDESTRIAN_ROOT = "/home/PJLAB/zhuhao/workspace/human_in_simulators/metadrive_code/synbody_mats/sensedressing-sample-assets/gltf/"
-    PEDESTRIAN_TEXTURE = {
-        # "0": {'path': PEDESTRIAN_ROOT + "RPtest_GLTF/rp_amit_rigged_008_yup_t_model.gltf", 'height': 1.29714}, 
-        # "0": {'path': PEDESTRIAN_ROOT + "characters_yup/3281Model.glb", 'height': 1.29714}, \
-        "0": {'path': PEDESTRIAN_ROOT + "characters_yup/0000403_people_baked.gltf", 'height': 2}, 
-        # "0": {'path': PEDESTRIAN_ROOT + "characters_yup/0000403_people_baked.gltf", 'height': 1.29714}, 
-        # "1": {'path': PEDESTRIAN_ROOT + "characters_yup/0009203_people_baked.gltf", 'height': 1.23252},
-        # "2": {'path': PEDESTRIAN_ROOT + "characters_yup/0000001.gltf", 'height': 1.29714},  # 
-        # "3": {'path': PEDESTRIAN_ROOT + "characters_yup/0000002.gltf", 'height': 1.29714},  # 
-        # "4": {'path': PEDESTRIAN_ROOT + "characters_yup/0000006.gltf", 'height': 1.29714},  # 
-        # "5": {'path': PEDESTRIAN_ROOT + "characters_yup/0000007.gltf", 'height': 1.29714},  # 
-        # "6": {'path': PEDESTRIAN_ROOT + "characters_yup/0000010.gltf", 'height': 1.29714},  # 
-    }    
-
-
-    PEDESTRIAN_MOTIONS = {
-        'walk': PEDESTRIAN_ROOT + 'motions_yup/2023_09_04T16_34_02-0000_treadmill_norm-fps_30.gltf',
-        'run': PEDESTRIAN_ROOT + 'motions_yup/2023_09_04T16_36_43-0008_normal_jog2-fps_30.gltf',
-        'idle': PEDESTRIAN_ROOT + 'motions_yup/2023_09_04T16_34_02-0000_treadmill_norm-fps_30.gltf'
-
-        # 'walk': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
-        # 'run': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
-        # 'idle': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
-
-        # 'walk': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
-        # 'run': PEDESTRIAN_ROOT + 'motions_yup/jog.gltf',
-        # 'idle': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
-
-        # 'walk': PEDESTRIAN_ROOT + 'motions_yup/3281Motion2.gltf',
-        # 'run': PEDESTRIAN_ROOT + 'motions_yup/3281Motion2.gltf',
-        # 'idle': PEDESTRIAN_ROOT + 'motions_yup/3281Motion2.gltf',
-
-        # 'walk': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
-        # 'run': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
-        # 'idle': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
-        
-    }
-    """
 
     @staticmethod
     def get_random_texture():
@@ -595,16 +556,17 @@ class PedestrianAssetPaths:
 
 
     SYNBODY_PEDESTRIAN_MOTIONS = {
-        'rotation': -90,
-
         'walk': PEDESTRIAN_ROOT + 'motions_yup/walk.gltf',
         'run': PEDESTRIAN_ROOT + 'motions_yup/jog.gltf',
         'idle': PEDESTRIAN_ROOT + 'motions_yup/idle.gltf',
-        # "test": "/home/PJLAB/zhuhao/workspace/MDs/metadrive_ped/tmp/walk60.egg",
-        'loop_start': 10
-        # 'walk': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
-        # 'run': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
-        # 'idle': PEDESTRIAN_ROOT + 'motions_yup/output_amass.gltf',
+    }
+
+    CLAUDIA_MOTION = {
+        'walk': PEDESTRIAN_ROOT + "claudia/motion/Feminine_Walk_Forward.fbx.gltf", 
+        'run': PEDESTRIAN_ROOT + "claudia/motion/Slow_Run.fbx.gltf", 
+        'idle': PEDESTRIAN_ROOT + "claudia/motion/Briefcase_Idle.fbx.gltf", 
+
+        
     }
 
     PEDESTRIAN_ACTORS = {
@@ -637,6 +599,11 @@ class PedestrianAssetPaths:
                    'idle': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf'},
                'height': 1.29714}, # render people
                
+        "claudia_002": {
+            'actor_path': PEDESTRIAN_ROOT + "claudia/claudiaTPose.gltf", 
+                        'motion_path': CLAUDIA_MOTION,
+                        'height': 1.29714},
+  
     #     "r4": {'actor_path': PEDESTRIAN_ROOT + "RPtest_GLTF/rp_amit_rigged_011_yup_t_model.gltf", 
     #            'motion_path': {
     #                'walk': PEDESTRIAN_ROOT + 'RPtest_GLTF/rp_amit_rigged_008_yup_t_motion.gltf',
@@ -656,7 +623,7 @@ class PedestrianAssetPaths:
 
     @staticmethod
     def get_random_actor():
-        return list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values())[1]
+        return list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values())[-1]
         # return random.choice(list(PedestrianAssetPaths.PEDESTRIAN_ACTORS.values()))
 
 class AssetPaths:

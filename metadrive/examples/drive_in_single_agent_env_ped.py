@@ -96,21 +96,23 @@ if __name__ == "__main__":
             print("The observation is an numpy array with shape: ", o.shape)
         for i in range(1, 1000000000):
             o, r, tm, tc, info = env.step([0, 0])
-            env.render(
-                text={
-                    "Auto-Drive (Switch mode: T)": "on" if env.current_track_agent.expert_takeover else "off",
-                    "Current Observation": args.observation,
-                    "Keyboard Control": "W,A,S,D",
-                }
-            )
+            # frame = env.render()
+            # frame = env.render(mode="topdown", window=True, screen_size=(400,400), semantic_map=True)
+            frame = env.render(mode="topdown", window=True, screen_record=False, screen_size=(400,400), semantic_map=True)
+            #     text={
+            #         "Auto-Drive (Switch mode: T)": "on" if env.current_track_agent.expert_takeover else "off",
+            #         "Current Observation": args.observation,
+            #         "Keyboard Control": "W,A,S,D",
+            #     }
+            # )
 
-            if args.observation == "rgb_camera":
-                cv2.imshow('RGB Image in Observation', o["image"][..., -1])
-                cv2.waitKey(1)
-            if (tm or tc) and info["arrive_dest"]:
-                env.reset(env.current_seed + 1)
-                env.current_track_agent.expert_takeover = True
+            # if args.observation == "rgb_camera":
+            #     cv2.imshow('RGB Image in Observation', o["image"][..., -1])
+            #     cv2.waitKey(1)
+            # if (tm or tc) and info["arrive_dest"]:
+            #     env.reset(env.current_seed + 1)
+            #     env.current_track_agent.expert_takeover = True
             
-            frame = env.render(mode="topdown", window=True, screen_record=(60,0), screen_size=(400,400), semantic_map=True)
     finally:
+        # env.top_down_renderer.generate_gif("file_name.gif")
         env.close()

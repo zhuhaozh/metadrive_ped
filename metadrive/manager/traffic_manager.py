@@ -433,6 +433,7 @@ class HumanoidManager(BaseManager):
         super(HumanoidManager, self).__init__()
 
         self._traffic_vehicles = []
+        self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
 
         # triggered by the event. TODO(lqy) In the future, event trigger can be introduced
         self.block_triggered_vehicles = []
@@ -453,7 +454,6 @@ class HumanoidManager(BaseManager):
         self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
         self.num_humanoid_agent = 20
-        self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
         self.planning.generate_template_xml(self.walkable_mask)
 
         self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
