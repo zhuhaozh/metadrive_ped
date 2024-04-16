@@ -14,6 +14,7 @@ from metadrive.constants import PGDrivableAreaProperty
 from metadrive.constants import PGLineType
 import re
 
+import random
 logger = get_logger()
 
 
@@ -85,7 +86,18 @@ class PGBlock(BaseBlock):
         remove_negative_lanes=False,
         side_lane_line_type=None,
         center_line_type=None,
+        crswalk_density=0.5,
     ):
+        self.crswalk_density = self.engine.global_config["crswalk_density"]
+        print("---- crswalk_density: ----", self.crswalk_density)
+        
+        if self.ID == 'X' or self.ID == 'O':
+            self.valid_crswalk = random.sample([1,2,3,4,5,6], round(self.crswalk_density * 6))
+        elif self.ID == 'T':
+            self.valid_crswalk = random.sample([3,4,5,6], round(self.crswalk_density * 4))
+        elif self.ID == 'C':
+            self.valid_crswalk = random.sample([1,2,3], round(self.crswalk_density * 3))
+            print('!!!!crswalk_density: ', self.valid_crswalk)
 
         # Specify the lane line type
         self.side_lane_line_type = side_lane_line_type
@@ -345,7 +357,7 @@ class PGBlock(BaseBlock):
             for longitude in longs:
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
-        # print(f'{key}={polygon}')
+        print(f'{key}={polygon}')
 
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {

@@ -1,7 +1,7 @@
 <root>
    <agents number="3" type="orca-par-ecbs">
       <agents size="0.3" movespeed="1" agentsmaxnum="10" timeboundary="5.4" sightradius="3.0" timeboundaryobst="33" />
-   <agent id="0" size="0.3" start.xr="80" start.yr="131" goal.xr="86.5" goal.yr="69.5" /><agent id="1" size="0.3" start.xr="145" start.yr="100" goal.xr="65.5" goal.yr="77.5" /><agent id="2" size="0.3" start.xr="5" start.yr="53" goal.xr="5.5" goal.yr="53.5" /></agents>
+   <agent id="0" size="0.3" start.xr="54" start.yr="50" goal.xr="158.5" goal.yr="120.5" /><agent id="1" size="0.3" start.xr="5" start.yr="57" goal.xr="242.5" goal.yr="54.5" /><agent id="2" size="0.3" start.xr="86" start.yr="119" goal.xr="269.5" goal.yr="41.5" /></agents>
    <obstacles number="11">
       <obstacle>
          <vertex xr="172" yr="2" />

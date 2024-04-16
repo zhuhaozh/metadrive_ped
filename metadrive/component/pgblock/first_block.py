@@ -35,6 +35,7 @@ class FirstPGBlock(PGBlock):
         remove_negative_lanes=False,
         side_lane_line_type=None,
         center_line_type=None,
+        crswalk_density=0.0, ##############
     ):
         place_holder = PGBlockSocket(Road(Decoration.start, Decoration.end), Road(Decoration.start, Decoration.end))
         super(FirstPGBlock, self).__init__(
@@ -127,6 +128,8 @@ class FirstPGBlock(PGBlock):
         start_lat = +lane.width_at(0) - crosswalk_width / 2 - 0.7
         side_lat = start_lat + crosswalk_width - 0.7
 
+
+        ### Force first block only have one cross road
         # print('first block lane index: ' ,  lane.index) # ('>', '>>', 0)
         if (('>', '>>', 1) == lane.index or ('>', '>>', 0) == lane.index):
             build_at_start = True 
@@ -134,14 +137,17 @@ class FirstPGBlock(PGBlock):
         elif (('->>', '->', 1) == lane.index or ('->>', '->', 0) == lane.index): 
             build_at_start = False
             build_at_end = True
-        elif (('>>', '>>>', 1) == lane.index or ('>>', '>>>', 0) == lane.index):
-            build_at_start = False 
-            build_at_end = True
-        elif (('->>>', '->>', 1) == lane.index or ('->>>', '->>', 0) == lane.index):
-            build_at_start = True 
+        # elif (('>>', '>>>', 1) == lane.index or ('>>', '>>>', 0) == lane.index):
+        #     build_at_start = False 
+        #     build_at_end = True
+        # elif (('->>>', '->>', 1) == lane.index or ('->>>', '->>', 0) == lane.index):
+        #     build_at_start = True 
+        #     build_at_end = False
+        else: 
             build_at_end = False
+            build_at_start = False
 
-        if build_at_end:  ### ??? 
+        if build_at_end: 
             longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index)
             self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)

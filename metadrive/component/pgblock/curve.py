@@ -104,7 +104,7 @@ class Curve(PGBlock):
             for longitude in longs:
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
-        # print(f'{key}={polygon}')
+        print(f'{key}={polygon}')
 
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
@@ -115,9 +115,12 @@ class Curve(PGBlock):
         }
 
         ### TODO: end of previous block may conflict a little bit with curve start
-        if len(self.crosswalks.keys()) >= 16: # and self.class_name=='Curve':
+        ## curve_start --> crs_part=1 (4 lane part), straight_end --> crs_part=2 (4 lane part), curve_end --> crs_part=3 (8 lane part)
+        print('len(self.crosswalks.keys()): ', len(self.crosswalks.keys()))
+        check_status = len(self.valid_crswalk)*4 if 3 not in self.valid_crswalk else len(self.valid_crswalk)*4 + 4
+        if len(self.crosswalks.keys()) >= check_status: #16: # and self.class_name=='Curve':
             from scipy.spatial import ConvexHull
-            process_values = ['straight_end','curve_start', 'curve_end']
+            process_values = self.valid_crswalk # ['straight_end','curve_start', 'curve_end']
             for process_value in process_values:
                 curve_start_keys = [k for k,subdict in self.crosswalks.items() if any(subvalue == process_value for subvalue in subdict.values())]
                 tmptotal = []
@@ -151,30 +154,42 @@ class Curve(PGBlock):
         if build_at_end:
             longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index)
-            if f'-{self.name}0_0_' == lane.index[0]: label = 'curve_start'
-            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: label = 'straight_end'
-            elif f'{self.name}0_0_' == lane.index[1]: label = 'curve_end' # 1
-            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: label = 'curve_end' #3
+            if f'-{self.name}0_0_' == lane.index[0]: 
+                crs_part=1 #'curve_start'
+            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: 
+                crs_part=2 #'straight_end'
+            elif f'{self.name}0_0_' == lane.index[1]: # 1
+                crs_part=3 #'curve_end'
+            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: #3
+                crs_part=3 #'curve_end'
             else: 
                 print('----- curve label unknown: ', lane.index)
-                label = 'todo'
+                crs_part = 'todo'
                 assert False
-            self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, label)
-
+            if crs_part in self.valid_crswalk:
+                self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, crs_part)
+    
         if build_at_start:
             longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index) + "_S"
-            if f'{self.name}0_0_' == lane.index[1]: label = 'curve_start'
-            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: label = 'straight_end'
-            elif f'-{self.name}0_0_' == lane.index[0]: label = 'curve_end'  #2
-            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: label = 'curve_end' #2
+            if f'{self.name}0_0_' == lane.index[1]: 
+                crs_part=1 # 'curve_start' 
+            elif f'-{self.name}0_1_' == lane.index[0] and f'-{self.name}0_0_' == lane.index[1]: 
+                crs_part=2 #'straight_end'
+            elif f'-{self.name}0_0_' == lane.index[0]: #2
+                crs_part=3 #'curve_end' 
+            elif f'{self.name}0_0_' == lane.index[0] and f'{self.name}0_1_' == lane.index[1]: #2
+                crs_part=3 #'curve_end' 
             else: 
-                print('----- curve label unknown: ', lane.index); label = 'todo'
+                print('----- curve label unknown: ', lane.index); crs_part = 'todo'
                 assert False
-            self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, label)
+            if crs_part in self.valid_crswalk:
+                self._build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat, crs_part)
 
-# curve start : CRS_('>>>', '1C0_0_', 0)_S,CRS_('>>>', '1C0_0_', 1)_S,CRS_('-1C0_0_', '->>>', 0), CRS_('-1C0_0_', '->>>', 1)
-# straight end: CRS_('1C0_0_', '1C0_1_', 0), CRS_('1C0_0_', '1C0_1_', 1), CRS_('-1C0_1_', '-1C0_0_', 0)_S, CRS_('-1C0_1_', '-1C0_0_', 1)_S
+# curve start : CRS_('>>>', '1C0_0_', 0)_S, CRS_('>>>', '1C0_0_', 1)_S, 
+                # CRS_('-1C0_0_', '->>>', 0), CRS_('-1C0_0_', '->>>', 1)
+# straight end: CRS_('1C0_0_', '1C0_1_', 0), CRS_('1C0_0_', '1C0_1_', 1), 
+                # CRS_('-1C0_1_', '-1C0_0_', 0)_S, CRS_('-1C0_1_', '-1C0_0_', 1)_S
 # curve end: 1. (, 1C0_0_, 0), (, 1C0_0_, 1)
-            #2. (-1C0_0_, , 0)_S, (-1C0_0_, ,1)_S, (1C0_0_, 1C0_1_, 0)_S, (1C0_0_, 1C0_1_, 1)_S, 
+            # 2. (-1C0_0_, , 0)_S, (-1C0_0_, ,1)_S, (1C0_0_, 1C0_1_, 0)_S, (1C0_0_, 1C0_1_, 1)_S, 
             # 3. (-1C0_1_, -1C0_0_,0), (-1C0_1_,-1C0_0_,1)

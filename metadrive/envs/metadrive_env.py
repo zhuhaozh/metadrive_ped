@@ -29,10 +29,12 @@ METADRIVE_DEFAULT_CONFIG = dict(
         BaseMap.LANE_WIDTH: 3.5,
         BaseMap.LANE_NUM: 3,
         "exit_length": 50,
+        
     },
     store_map=True,
-
+    crswalk_density=0.1, 
     # ===== Traffic =====
+    
     traffic_density=0.1,
     need_inverse_traffic=False,
     traffic_mode=TrafficMode.Trigger,  # "Respawn", "Trigger"
@@ -115,7 +117,7 @@ class MetaDriveEnv(BaseEnv):
             )
 
         config["map_config"] = parse_map_config(
-            easy_map_config=config["map"], new_map_config=config["map_config"], default_config=self.default_config_copy
+            easy_map_config=config["map"], new_map_config=config["map_config"],  default_config=self.default_config_copy
         )
         print(config["map_config"] )  #{'type': 'block_sequence', 'config': 'XSO', 'lane_width': 3.5, 'lane_num': 3, 'exit_length': 50}
         # assert False

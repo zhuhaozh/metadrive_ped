@@ -255,9 +255,23 @@ class Roundabout(PGBlock):
         if build_at_end:
             longs = np.array([lane.length - PGDrivableAreaProperty.SIDEWALK_LENGTH, lane.length, lane.length + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index)
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            if   f'{self.name}0_2_' == lane.index[0] and f'{self.name}0_3_' == lane.index[1]: crs_part = 1
+            elif f'-{self.name}0_3_' == lane.index[0] and f'-{self.name}0_2_' == lane.index[1]: crs_part = 2
+            elif f'{self.name}1_2_' == lane.index[0] and f'{self.name}1_3_' == lane.index[1]: crs_part = 3
+            elif f'-{self.name}1_3_' == lane.index[0] and f'-{self.name}1_2_' == lane.index[1]: crs_part = 4
+            elif f'{self.name}2_2_' == lane.index[0] and f'{self.name}2_3_' == lane.index[1]: crs_part = 5
+            elif f'-{self.name}2_3_' == lane.index[0] and f'-{self.name}2_2_' == lane.index[1]: crs_part = 6
+            if crs_part in self.valid_crswalk:
+                self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
             
         if build_at_start:
             longs = np.array([0 - PGDrivableAreaProperty.SIDEWALK_LENGTH, 0, 0 + PGDrivableAreaProperty.SIDEWALK_LENGTH])
             key = "CRS_" + str(lane.index) + "_S"
-            self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)
+            if   f'-{self.name}0_3_' == lane.index[0] and f'-{self.name}0_2_' == lane.index[1]: crs_part = 1
+            elif f'{self.name}0_2_' == lane.index[0] and f'{self.name}0_3_' == lane.index[1]: crs_part = 2
+            elif f'-{self.name}1_3_' == lane.index[0] and f'-{self.name}1_2_' == lane.index[1]: crs_part = 3
+            elif f'{self.name}1_2_' == lane.index[0] and f'{self.name}1_3_' == lane.index[1]: crs_part = 4
+            elif f'-{self.name}2_3_' == lane.index[0] and f'-{self.name}2_2_' == lane.index[1]: crs_part = 5
+            elif f'{self.name}2_2_' == lane.index[0] and f'{self.name}2_3_' == lane.index[1]: crs_part = 6
+            if crs_part in self.valid_crswalk:
+                self.build_crosswalk_block(key, lane, sidewalk_height, lateral_direction, longs, start_lat, side_lat)

@@ -453,8 +453,8 @@ class HumanoidManager(BaseManager):
         """
         map = self.current_map
 
-        save_data_for_sample = {'sidewalks': map.sidewalks, 'crosswalks': map.crosswalks}
-        np.save('save_data_for_sample.npy', save_data_for_sample)
+        # save_data_for_sample = {'sidewalks': map.sidewalks, 'crosswalks': map.crosswalks}
+        # np.save('save_data_for_sample.npy', save_data_for_sample)
         # assert False
 
         ## self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
