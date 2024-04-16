@@ -104,7 +104,7 @@ class Curve(PGBlock):
             for longitude in longs:
                 point = lane.position(longitude, lateral)
                 polygon.append([point[0], point[1]])
-        print(f'{key}={polygon}')
+        # print(f'{key}={polygon}')
 
         self.crosswalks[key] = {
         # self.sidewalks[str(lane.index)] = {
@@ -116,7 +116,7 @@ class Curve(PGBlock):
 
         ### TODO: end of previous block may conflict a little bit with curve start
         ## curve_start --> crs_part=1 (4 lane part), straight_end --> crs_part=2 (4 lane part), curve_end --> crs_part=3 (8 lane part)
-        print('len(self.crosswalks.keys()): ', len(self.crosswalks.keys()))
+        # print('len(self.crosswalks.keys()): ', len(self.crosswalks.keys()))
         check_status = len(self.valid_crswalk)*4 if 3 not in self.valid_crswalk else len(self.valid_crswalk)*4 + 4
         if len(self.crosswalks.keys()) >= check_status: #16: # and self.class_name=='Curve':
             from scipy.spatial import ConvexHull

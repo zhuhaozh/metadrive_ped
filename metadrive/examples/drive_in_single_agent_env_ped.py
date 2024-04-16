@@ -50,7 +50,7 @@ if __name__ == "__main__":
         use_render=True,
         manual_control=True,
         traffic_density=0.1,
-        crswalk_density=0.5,
+        crswalk_density=1,
         num_scenarios=10000,
         random_agent_model=False,
         random_lane_width=False,
