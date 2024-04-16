@@ -436,6 +436,7 @@ class HumanoidManager(BaseManager):
         super(HumanoidManager, self).__init__()
 
         self._traffic_vehicles = []
+        self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
 
         # triggered by the event. TODO(lqy) In the future, event trigger can be introduced
         self.block_triggered_vehicles = []
@@ -460,8 +461,7 @@ class HumanoidManager(BaseManager):
         ## self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask(map)
         self.walkable_mask, self.walkable_offset_x, self.walkable_offset_y = self.get_walkable_mask_new(map)
 
-        self.num_humanoid_agent = 2 #20
-        self.planning = OrcaPlanning() # "./orca_algo/task_examples_demo/custom_road_template.xml"
+        self.num_humanoid_agent = 20
         self.planning.generate_template_xml(self.walkable_mask)
 
         self.starts, self.goals = self.planning.random_starts_and_goals(self.walkable_mask[..., 0], self.num_humanoid_agent)
@@ -741,14 +741,15 @@ class HumanoidManager(BaseManager):
                 speed = speed / self.engine.global_config["physics_world_step_size"]
                 obj.set_anim_by_speed(speed)
 
-
-
                 obj.set_position(pos)
                 obj._body.setAngularMovement(heading)
                 # obj.set_roll(heading)
                 # print(heading)
                 # obj._body.setLinearMovement(LPoint3f(0 , 1, 0) * 3, True)
             # print("------------------------------------------")
+
+        if not hasattr(self, 'humanoid_on_block'):
+            return
 
         objs = self.get_objects(self.humanoid_on_block)
 

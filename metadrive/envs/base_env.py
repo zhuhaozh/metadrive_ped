@@ -29,6 +29,7 @@ from metadrive.scenario.utils import convert_recorded_scenario_exported
 from metadrive.type import MetaDriveType
 from metadrive.utils import Config, merge_dicts, get_np_random, concat_step_infos
 from metadrive.version import VERSION
+from memory_profiler import profile
 
 BASE_DEFAULT_CONFIG = dict(
 
@@ -484,6 +485,7 @@ class BaseEnv(gym.Env):
         self.logger.warning("Done function is not implemented. Return Done = False", extra={"log_once": True})
         return False, {}
 
+    @profile
     def render(self, text: Optional[Union[dict, str]] = None, mode=None, *args, **kwargs) -> Optional[np.ndarray]:
         """
         This is a pseudo-render function, only used to update onscreen message when using panda3d backend

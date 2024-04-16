@@ -1,13 +1,43 @@
+from metadrive.component.agents.pedestrian.pedestrian_type import SimplePedestrian
 from metadrive.envs.metadrive_env import MetaDriveEnv
-# from metadrive.policy.idm_policy import IDMPolicy
-# from metadrive.utils import setup_logger
-# from metadrive.component.traffic_participants.pedestrian import Pedestrian
-from metadrive.component.traffic_participants.pedestrian_navi import PedestrianNavigation
-from metadrive.component.traffic_participants.cyclist import Cyclist
+
+from panda3d.core import LVecBase3f
+
+from metadrive.tests.bvh import Bvh
+from metadrive.tests.load_egg import load_egg
+
+
+
+def set_motions(obj, motion):
+    # print(len(motion))
+    for joint_name in motion.keys():
+        joint = obj.actor.controlJoint(None, "modelRoot", joint_name)
+
+        rotation =  motion[joint_name]['rotation']
+        position = motion[joint_name]['position']
+
+        delta_xyz = LVecBase3f(*position)
+        if rotation is None:
+            joint.setPos(delta_xyz)
+        else:
+            r, p, h = rotation
+            delta_hpr = LVecBase3f(h, p, r)
+            joint.setPosHpr(delta_xyz, delta_hpr)
+
+
+def set_motion(obj, joint_name, rotation, offset=None):
+    joint = obj.actor.controlJoint(None, "modelRoot", joint_name)
+
+    r, p, h = rotation
+    delta_hpr = LVecBase3f(h, p, r)
+    if offset is None:
+        joint.setHpr(delta_hpr)
+    else:
+        offset = LVecBase3f(*offset)
+        joint.setPosHpr(offset, delta_hpr)
 
 
 if __name__ == "__main__":
-    # setup_logger(True)
     env = MetaDriveEnv(
         {
             "num_scenarios": 1,
@@ -41,56 +71,69 @@ if __name__ == "__main__":
             # "camera_smooth": False,
             "camera_height": 2,
             # "window_size": (2400, 1600),
-            "show_coordinates": True,
+            "show_coordinates": False,
 
             "traffic_vehicle_config":dict(
                 show_navi_mark=False,
                 show_dest_mark=False,
                 enable_reverse=False,
-                show_lidar=True,
-                show_lane_line_detector=True,
-                show_side_detector=True,
+                show_lidar=False,
+                show_lane_line_detector=False,
+                show_side_detector=False,
             ),
 
             "vehicle_config": {
-                "enable_reverse": False,
+                "enable_reverse": True,
             },
         }
     )
-    
-    import time
 
-    start = time.time()
     o, _ = env.reset()
 
     env.switch_to_third_person_view()
-    
-    obj_1 = env.engine.spawn_object(PedestrianNavigation, position=[15, 5], heading_theta=0, random_seed=1, set_friction=True) # control by 
-    obj_1.set_heading_theta(90, in_rad=False)
-    obj_1.set_heading_theta(180, in_rad=False)
-    obj_1.set_velocity(value=2, in_local_frame=True)
-    
 
-    env.vehicle.set_velocity([1, 0], in_local_frame=False)
-    
-    def clamp(i, mn=-1, mx=1):
-        return min(max(i, mn), mx)
+    traffic_vehicle_config1=dict(spawn_position_heading=[(10, 7), 0])
+    obj_1 = env.engine.spawn_object(SimplePedestrian, vehicle_config=traffic_vehicle_config1) # control by 
+    # obj_1.actor.loop('test')
 
-    for s in range(1, 10000):
+
+    traffic_vehicle_config2=dict(spawn_position_heading=[(10, 3), 0])
+    obj_2 = env.engine.spawn_object(SimplePedestrian, vehicle_config=traffic_vehicle_config2) # control by 
+    
+    # load bvh file
+    with open('./metadrive/tests/vis_functionality/motion_files/walk60.bvh') as f:
+        mocap = Bvh(f.read())
+    bvh_motions = mocap.get_all_motions(abs=False)
+    joint_names = mocap.get_joints_names()
+
+    # load egg file
+    egg_motions = load_egg("./metadrive/tests/vis_functionality/motion_files/walk60.egg")
+
+    degree_lst = list(range(0, 70, 4)) + list(range(70, -70, -4)) + list(range(-70, 0, 4))
+
+    for s in range(0, 10000):
         smp = env.action_space.sample()
         o, r, tm, tc, info = env.step(smp)
-        # print(obj_1.actor.getJoints())
-        # [root, pelvis, left_hip, left_knee, left_ankle, left_foot, left_foot_end, right_hip, right_knee, right_ankle, right_foot, 
-        #  right_foot_end, spine1, spine2, spine3, neck, head, jaw, jaw_end, left_eye_smplhf, left_eye_smplhf_end, right_eye_smplhf, 
-        #  right_eye_smplhf_end, left_collar, left_shoulder, left_elbow, left_wrist, left_index1, left_index2, left_index3, left_index3_end, 
-        #  left_middle1, left_middle2, left_middle3, left_middle3_end, left_pinky1, left_pinky2, left_pinky3, left_pinky3_end, left_ring1, left_ring2, left_ring3, left_ring3_end, left_thumb1, left_thumb2, left_thumb3, left_thumb3_end, right_collar, right_shoulder, right_elbow, right_wrist, right_index1, right_index2, right_index3, right_index3_end, right_middle1, right_middle2, right_middle3, right_middle3_end, right_pinky1, right_pinky2, right_pinky3, right_pinky3_end, right_ring1, right_ring2, right_ring3, right_ring3_end, right_thumb1, right_thumb2, right_thumb3, right_thumb3_end]
-        # obj_1.move([0, 1], 0.1)
-        # if s == 10:
-        #     obj_1.set_heading_theta(90, in_rad=False)
 
+        """
+        for joint_name in joint_names:
+            # joint = mocap.get_joint(joint_name)
+            # offset = mocap.joint_offset(joint_name)
+            channels = mocap.joint_channels(joint_name)
+            Xposition, Yposition, Zposition, Xrotation, Yrotation, Zrotation \
+                = mocap.frame_joint_channels(s % 50, joint_name, channels)
 
-        obj_1.joints['left_shoulder'].setR(clamp((s - 100) / 100) * 120) # in degree
-        obj_1.set_on_ground()
+            offset = (Xposition, Yposition, Zposition) # if s % 50 == 0 else None
+            rotation = Xrotation, Yrotation, Zrotation
+            set_motion(obj_2, joint_name, rotation, offset)
+        """
+
+        motion1 = bvh_motions[s % 50] # bvh
+        set_motions(obj_1, motion1)
+
+        motion2 = egg_motions[s % 50] # egg
+        set_motions(obj_2, motion2)
+
         env.render(
             text={
                 "heading_diff": env.vehicle.heading_diff(env.vehicle.lane),

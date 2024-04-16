@@ -539,6 +539,12 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         return character
     
     def set_anim_by_rorations(self, rotations):
+        # docs: https://docs.panda3d.org/1.10/python/programming/models-and-actors/multi-part-actors
+        # GLTF: metadrive/third_party/kitsunetsuki/gltf_inspect.py
+
+        # joints = {"left_shoulder": self.actor.controlJoint(None, 'modelRoot', 'right_shoulder')}
+        # self._body.joints['left_shoulder'].setR(clamp((s - 100) / 100) * 120) # in degree
+
         for rotation in rotations:
             pass
 
@@ -550,7 +556,7 @@ class BasePedestrian(BaseObject, BasePedestrianState):
         elif speed < 0.1:
             state = 'idle'
         else:
-            state = 'walk'    
+            state = 'walk'
 
         if self.cur_state != state:
             self.actor.loop(state, fromFrame=self.loop_start)
