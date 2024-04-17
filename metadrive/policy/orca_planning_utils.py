@@ -276,14 +276,14 @@ class OrcaPlanning:
 
     def get_planning(self, start_positions, goals):
 
-        def get_speed(positions):
+        def get_distances(positions):
             pos1 = positions[:-1]
             pos2 = positions[1:]
 
             pos_delta = pos2 - pos1
-            speed = np.linalg.norm(pos_delta, axis=2)
-            speed = np.concatenate([np.zeros((1, len(start_positions))), speed], axis=0)
-            return list(speed)
+            distances = np.linalg.norm(pos_delta, axis=2)
+            distances = np.concatenate([np.zeros((1, len(start_positions))), distances], axis=0)
+            return list(distances)
 
 
         self.set_agents(start_positions, goals)
@@ -304,7 +304,7 @@ class OrcaPlanning:
 
         nexts = np.stack(nexts, axis=1)
         self.next_positions = list(nexts)
-        self.speed = get_speed(nexts)
+        self.distances = get_distances(nexts)
         return nexts
 
     def has_next(self):
@@ -313,14 +313,14 @@ class OrcaPlanning:
         else:
             return False
         
-    def get_next(self, return_speed=False):
+    def get_next(self, return_distance=False):
         if not self.has_next():
             return None
 
-        if not return_speed:
+        if not return_distance:
             return self.next_positions.pop(0)
         else:
-            return self.next_positions.pop(0), self.speed.pop(0)
+            return self.next_positions.pop(0), self.distances.pop(0)
 
     @property
     def length(self):

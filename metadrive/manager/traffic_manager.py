@@ -728,9 +728,9 @@ class HumanoidManager(BaseManager):
         return SimplePedestrian
 
     def step_action(self):
-        def apply_actions(objs, dest_pos, speed):
+        def apply_actions(objs, dest_pos, distances):
             # print("------------------------------------------")
-            for objname, pos, speed in zip(objs, dest_pos, speed):
+            for objname, pos, distance in zip(objs, dest_pos, distances):
                 obj = list(self.engine.get_object(objname).values())[0]
                 pos = pos[0] + self.walkable_offset_x, pos[1] + self.walkable_offset_y
 
@@ -738,7 +738,7 @@ class HumanoidManager(BaseManager):
                 heading = get_dest_heading(obj, pos)
                 # print(heading)
                 # obj.set_heading(heading)
-                speed = speed / self.engine.global_config["physics_world_step_size"]
+                speed = distance / self.engine.global_config["physics_world_step_size"]
                 obj.set_anim_by_speed(speed)
 
                 obj.set_position(pos)
@@ -759,9 +759,9 @@ class HumanoidManager(BaseManager):
             self.planning.get_planning(self.starts, self.goals)
 
         # dest_pos = self.planning.get_next()
-        dest_pos, speed = self.planning.get_next(return_speed=True)
+        dest_pos, distances = self.planning.get_next(return_distance=True)
         
-        apply_actions(objs, dest_pos, speed)
+        apply_actions(objs, dest_pos, distances)
 
     def random_vehicle_type(self):
         from metadrive.component.vehicle.vehicle_type import random_vehicle_type
