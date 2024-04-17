@@ -217,7 +217,8 @@ class InRampOnStraight(Ramp):
         spawn_lanes = filtered
         assert sum([abs(l.length - InRampOnStraight.RAMP_LEN) <= 0.1 for ls in spawn_lanes for l in ls]) == 1
         return spawn_lanes
-
+    def _generate_crosswalk_from_line(self, lane, sidewalk_height=None, lateral_direction=1):
+        return None
 
 class OutRampOnStraight(Ramp):
     ID = "R"

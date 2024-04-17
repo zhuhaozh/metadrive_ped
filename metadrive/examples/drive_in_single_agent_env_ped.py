@@ -18,14 +18,14 @@ from metadrive.constants import HELP_MESSAGE
 
 """
 Block Type	    ID
-Straight	    S
-Circular	    C
-InRamp	        r	
-OutRamp	        R
-Roundabout	    O	
+Straight	    S  
+Circular	    C   #
+InRamp	        r   #
+OutRamp	        R   #
+Roundabout	    O	#
 Intersection	X
 Merge	        y	
-Split	        Y
+Split	        Y   
 Tollgate	    $	
 Parking lot	    P.x
 TInterection	T	
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # config = dict(map="SrTRSX",
     # config = dict(map="rR",
     # config = dict(map="XSTCOX",
-    config = dict(map="XSO",
+    config = dict(map="COTX", #"CTO","COXSTC",
     # config = dict(map="XSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCSXSTCOXCSCSCSCS",
     # config = dict(map="XSCSOTSCCC",
     # config = dict(map="XSCSOTSCCCCCCSSTOC",
@@ -50,6 +50,7 @@ if __name__ == "__main__":
         use_render=True,
         manual_control=True,
         traffic_density=0.1,
+        crswalk_density=1,
         num_scenarios=10000,
         random_agent_model=False,
         random_lane_width=False,

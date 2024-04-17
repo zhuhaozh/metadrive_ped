@@ -78,8 +78,8 @@ class PGMap(BaseMap):
         self.sidewalks = {}
         self.crosswalks = {}
         for block in self.blocks:
-            self.sidewalks.update(block.sidewalks)
-            self.crosswalks.update(block.crosswalks)
+            self.sidewalks.update(block.sidewalks)   
+            self.crosswalks.update(block.crosswalks) 
         big_map.destroy()
 
     def _config_generate(self, blocks_config: List, parent_node_path: NodePath, physics_world: PhysicsWorld):
