@@ -169,8 +169,8 @@ class NodeNetworkNavigation(BaseNavigation):
             ego_vehicle=ego_vehicle
         )
 
-        if True:
-        # if self._show_navi_info:
+        # if False:
+        if self._show_navi_info:
             # Whether to visualize little boxes in the scene denoting the checkpoints
             pos_of_goal = checkpoint
             self._goal_node_path.setPos(panda_vector(pos_of_goal[0], pos_of_goal[1], self.MARK_HEIGHT))
