@@ -366,6 +366,9 @@ class PGBlock(BaseBlock):
             "height": sidewalk_height
         }
       
+    def _generate_crosswalk_from_line(self, lane):
+        pass
+
 
     def _construct_lane_line_in_block(self, lane, construct_left_right=(True, True)):
         """
